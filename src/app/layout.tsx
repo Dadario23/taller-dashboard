@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
+import { ToastProvider } from "@/components/ui/toast";
+import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/context/theme-context";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SearchProvider } from "@/context/search-context";
+import { AppSidebar } from "@/components/app-sidebar";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -27,7 +32,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <ToastProvider>{children}</ToastProvider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
