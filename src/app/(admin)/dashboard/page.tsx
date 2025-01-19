@@ -21,9 +21,8 @@ export default function Dashboard() {
     <>
       {/* ===== Top Heading ===== */}
       <Header>
-        <TopNav links={topNav} />
-        <div className="ml-auto flex items-center space-x-4">
-          <Search />
+        <Search />
+        <div className="ml-auto flex items-center gap-4">
           <ThemeSwitch />
           <ProfileDropdown />
         </div>

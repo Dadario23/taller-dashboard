@@ -20,7 +20,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { sidebarData } from "./data/sidebar-data";
+import { sidebarData } from "@/components/sidebar-data";
 import { ScrollArea } from "./ui/scroll-area";
 
 export function CommandMenu() {

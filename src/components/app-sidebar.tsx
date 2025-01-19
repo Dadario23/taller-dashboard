@@ -8,7 +8,7 @@ import {
 import { NavGroup } from "@/components/nav-group";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
-import { sidebarData } from "./data/sidebar-data";
+import { sidebarData } from "@/components/sidebar-data";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (

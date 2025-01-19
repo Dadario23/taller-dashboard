@@ -1,4 +1,3 @@
-Link;
 import { IconMenu } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -31,14 +30,23 @@ export function TopNav({ className, links, ...props }: TopNavProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom" align="start">
             {links.map(({ title, href, isActive, disabled }) => (
-              <DropdownMenuItem key={`${title}-${href}`} asChild>
-                <Link
-                  href={href}
-                  className={!isActive ? "text-muted-foreground" : ""}
-                  /* disabled={disabled} */
-                >
-                  {title}
-                </Link>
+              <DropdownMenuItem
+                key={`${title}-${href}`}
+                asChild
+                disabled={disabled} // Para manejar estilos de dropdown
+              >
+                {disabled ? (
+                  <span className="text-muted-foreground cursor-not-allowed">
+                    {title}
+                  </span>
+                ) : (
+                  <Link
+                    href={href}
+                    className={cn(!isActive ? "text-muted-foreground" : "")}
+                  >
+                    {title}
+                  </Link>
+                )}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -52,16 +60,26 @@ export function TopNav({ className, links, ...props }: TopNavProps) {
         )}
         {...props}
       >
-        {links.map(({ title, href, isActive, disabled }) => (
-          <Link
-            key={`${title}-${href}`}
-            href={href}
-            /* disabled={disabled} */
-            className={`text-sm font-medium transition-colors hover:text-primary ${isActive ? "" : "text-muted-foreground"}`}
-          >
-            {title}
-          </Link>
-        ))}
+        {links.map(({ title, href, isActive, disabled }) =>
+          disabled ? (
+            <span
+              key={`${title}-${href}`}
+              className="text-sm font-medium text-muted-foreground cursor-not-allowed"
+            >
+              {title}
+            </span>
+          ) : (
+            <Link
+              key={`${title}-${href}`}
+              href={href}
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                isActive ? "" : "text-muted-foreground"
+              }`}
+            >
+              {title}
+            </Link>
+          )
+        )}
       </nav>
     </>
   );

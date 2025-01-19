@@ -4,7 +4,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SearchProvider } from "@/context/search-context";
 import React from "react";
 
-const layoutUsers = ({
+const layout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -12,11 +12,17 @@ const layoutUsers = ({
   return (
     <SidebarProvider>
       <SearchProvider>
-        <AppSidebar />
-        <SidebarInset>{children}</SidebarInset>
+        <div className="flex h-screen w-screen overflow-hidden">
+          {/* Sidebar */}
+          <AppSidebar />
+          {/* Main content area */}
+          <SidebarInset className="flex-1 overflow-auto">
+            {children}
+          </SidebarInset>
+        </div>
       </SearchProvider>
     </SidebarProvider>
   );
 };
 
-export default layoutUsers;
+export default layout;

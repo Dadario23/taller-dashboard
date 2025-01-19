@@ -9,8 +9,8 @@ import { UsersDialogs } from "@/components/users/users-dialogs";
 import { UsersPrimaryButtons } from "@/components/users/users-primary-buttons";
 import { UsersTable } from "@/components/users/users-table";
 import UsersProvider from "@/context/users-context";
-import { userListSchema } from "@/components/data/schema";
-import { users } from "@/components/data/users";
+import { userListSchema } from "@/components/users/data/schema";
+import { users } from "@/components/users/data/users";
 
 export default function Users() {
   // Parse user list
@@ -18,9 +18,9 @@ export default function Users() {
 
   return (
     <UsersProvider>
-      <Header fixed>
+      <Header>
         <Search />
-        <div className="ml-auto flex items-center space-x-4">
+        <div className="ml-auto flex items-center gap-4">
           <ThemeSwitch />
           <ProfileDropdown />
         </div>
