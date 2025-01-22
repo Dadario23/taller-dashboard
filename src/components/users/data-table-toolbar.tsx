@@ -18,17 +18,19 @@ export function DataTableToolbar<TData>({
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
+        {/* Cambiar username a fullname */}
         <Input
-          placeholder="Filter users..."
+          placeholder="Filter users by name..."
           value={
-            (table.getColumn("username")?.getFilterValue() as string) ?? ""
+            (table.getColumn("fullname")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table.getColumn("username")?.setFilterValue(event.target.value)
+            table.getColumn("fullname")?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
         <div className="flex gap-x-2">
+          {/* Filtro por status */}
           {table.getColumn("status") && (
             <DataTableFacetedFilter
               column={table.getColumn("status")}
@@ -41,6 +43,7 @@ export function DataTableToolbar<TData>({
               ]}
             />
           )}
+          {/* Filtro por role */}
           {table.getColumn("role") && (
             <DataTableFacetedFilter
               column={table.getColumn("role")}
@@ -49,6 +52,7 @@ export function DataTableToolbar<TData>({
             />
           )}
         </div>
+        {/* Botón para resetear filtros */}
         {isFiltered && (
           <Button
             variant="ghost"

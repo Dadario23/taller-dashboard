@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import {
   ColumnDef,
@@ -23,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { User } from "./data/schema";
+import { User } from "./data/schema"; // Asegúrate de que el esquema esté sincronizado con los datos
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 
@@ -35,7 +36,7 @@ declare module "@tanstack/react-table" {
 }
 
 interface DataTableProps {
-  columns: ColumnDef<User>[];
+  columns: ColumnDef<User>[]; // Esquema adaptado para los datos reales de MongoDB
   data: User[];
 }
 

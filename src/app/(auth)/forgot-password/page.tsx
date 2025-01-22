@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { ForgotForm } from "@/app/(auth)/forgot-password/forgot-password-form";
+import { ForgotForm } from "@/components/forgot-password/forgot-password-form";
 import Link from "next/link";
 
 export default function ForgotPassword() {

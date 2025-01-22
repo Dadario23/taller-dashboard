@@ -14,7 +14,7 @@ import { tasks } from "@/components/tasks/data/tasks";
 export default function Tasks() {
   return (
     <TasksProvider>
-      <Header>
+      <Header fixed>
         <Search />
         <div className="ml-auto flex items-center gap-4">
           <ThemeSwitch />

@@ -4,6 +4,8 @@ import { useState, HTMLAttributes } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/password-input";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
 type UserAuthFormProps = HTMLAttributes<HTMLDivElement>;
 
@@ -24,18 +27,16 @@ const formSchema = z.object({
   email: z
     .string()
     .min(1, { message: "Por favor ingrese su email" })
-    .email({ message: "Invalid email address" }),
+    .email({ message: "Dirección de correo no válida" }),
   password: z
     .string()
-    .min(1, {
-      message: "Por favor ingrese su contraseña",
-    })
-    .min(7, {
-      message: "Password must be at least 7 characters long",
-    }),
+    .min(1, { message: "Por favor ingrese su contraseña" })
+    .min(7, { message: "La contraseña debe tener al menos 7 caracteres" }),
 });
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
+  const { toast } = useToast();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -46,21 +47,55 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     },
   });
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
+
     try {
-      // Aquí puedes añadir tu lógica de autenticación
-      console.log(data);
+      const res = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        toast({
+          title: "Error de inicio de sesión",
+          description: res.error,
+          variant: "destructive",
+        });
+      } else if (res?.ok) {
+        router.push("/dashboard"); // Redirige al dashboard después del login
+      }
+    } catch (error) {
+      toast({
+        title: "Error inesperado",
+        description:
+          "Hubo un error durante el inicio de sesión. Inténtalo de nuevo más tarde.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
-  }
+  };
+
+  const handleProviderSignIn = async (provider: string) => {
+    try {
+      await signIn(provider, { callbackUrl: "/dashboard" });
+    } catch (error) {
+      toast({
+        title: "Error al iniciar sesión",
+        description: `No se pudo iniciar sesión con ${provider}.`,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid gap-2">
+            {/* Campo de Email */}
             <FormField
               control={form.control}
               name="email"
@@ -74,6 +109,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                 </FormItem>
               )}
             />
+
+            {/* Campo de Contraseña */}
             <FormField
               control={form.control}
               name="password"
@@ -85,7 +122,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                       href="/forgot-password"
                       className="text-sm font-medium text-muted-foreground hover:opacity-75"
                     >
-                      Olvidó su contraseña?
+                      ¿Olvidaste tu contraseña?
                     </Link>
                   </div>
                   <FormControl>
@@ -95,37 +132,43 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                 </FormItem>
               )}
             />
-            <Button className="mt-2" disabled={isLoading}>
-              Login
+
+            {/* Botón de Login */}
+            <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
+              {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
             </Button>
 
-            <div className="relative my-2">
+            {/* Separador */}
+            <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
+                  O continuar con
                 </span>
               </div>
             </div>
 
+            {/* Botones de Proveedores */}
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 className="w-full"
                 type="button"
+                onClick={() => handleProviderSignIn("google")}
                 disabled={isLoading}
               >
-                GitHub
+                Google
               </Button>
               <Button
                 variant="outline"
                 className="w-full"
                 type="button"
+                onClick={() => handleProviderSignIn("github")}
                 disabled={isLoading}
               >
-                Facebook
+                GitHub
               </Button>
             </div>
           </div>

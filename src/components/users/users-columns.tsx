@@ -40,12 +40,14 @@ export const columns: ColumnDef<User>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "username",
+    accessorKey: "fullname",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Username" />
+      <DataTableColumnHeader column={column} title="Full Name" />
     ),
     cell: ({ row }) => (
-      <LongText className="max-w-36">{row.getValue("username")}</LongText>
+      <LongText className="max-w-36">
+        {row.getValue("fullname") || "Unknown"}
+      </LongText>
     ),
     meta: {
       className: cn(
@@ -57,32 +59,20 @@ export const columns: ColumnDef<User>[] = [
     enableHiding: false,
   },
   {
-    id: "fullName",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
-    ),
-    cell: ({ row }) => {
-      const { firstName, lastName } = row.original;
-      const fullName = `${firstName} ${lastName}`;
-      return <LongText className="max-w-36">{fullName}</LongText>;
-    },
-    meta: { className: "w-36" },
-  },
-  {
     accessorKey: "email",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Email" />
     ),
     cell: ({ row }) => (
-      <div className="w-fit text-nowrap">{row.getValue("email")}</div>
+      <div className="w-fit text-nowrap">{row.getValue("email") || "N/A"}</div>
     ),
   },
   {
-    accessorKey: "phoneNumber",
+    accessorKey: "whatsapp",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Phone Number" />
+      <DataTableColumnHeader column={column} title="WhatsApp" />
     ),
-    cell: ({ row }) => <div>{row.getValue("phoneNumber")}</div>,
+    cell: ({ row }) => <div>{row.getValue("whatsapp") || "N/A"}</div>,
     enableSorting: false,
   },
   {
@@ -91,12 +81,13 @@ export const columns: ColumnDef<User>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const { status } = row.original;
-      const badgeColor = callTypes.get(status);
+      const status = row.original.status;
+      const badgeColor = callTypes.get(status) || "bg-neutral-300";
       return (
         <div className="flex space-x-2">
           <Badge variant="outline" className={cn("capitalize", badgeColor)}>
-            {row.getValue("status")}
+            {status || "Unknown"}{" "}
+            {/* Mostramos el valor de `status` o "Unknown" si es undefined */}
           </Badge>
         </div>
       );
@@ -116,16 +107,16 @@ export const columns: ColumnDef<User>[] = [
       const { role } = row.original;
       const userType = userTypes.find(({ value }) => value === role);
 
-      if (!userType) {
-        return null;
-      }
-
       return (
         <div className="flex gap-x-2 items-center">
-          {userType.icon && (
+          {userType?.icon ? (
             <userType.icon size={16} className="text-muted-foreground" />
+          ) : (
+            <div className="w-4 h-4 bg-gray-300 rounded-full" />
           )}
-          <span className="capitalize text-sm">{row.getValue("role")}</span>
+          <span className="capitalize text-sm">
+            {row.getValue("role") || "Unknown Role"}
+          </span>
         </div>
       );
     },

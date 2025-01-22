@@ -1,6 +1,6 @@
 /* import { Link } from "@tanstack/react-router"; */
 import { Card } from "@/components/ui/card";
-import { SignUpForm } from "@/app/(auth)/sign-up/sign-up-form";
+import { SignUpForm } from "@/components/sign-up/sign-up-form";
 import Link from "next/link";
 
 export default function SignUp() {
