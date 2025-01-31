@@ -1,12 +1,12 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { labels, priorities, statuses } from "@/components/tasks/data/data";
-import { Task } from "@/components/tasks/data/schema";
-import { DataTableColumnHeader } from "./data-table-column-header";
-import { DataTableRowActions } from "./data-table-row-actions";
+import { RepairType } from "@/components/repairs/data/schema";
+import { DataTableColumnHeader } from "./repairs-data-table-column-header";
+import Link from "next/link";
+import { DataTableRowActions } from "./repairs-data-table-row-actions";
 
-export const columns: ColumnDef<Task>[] = [
+export const repairsColumns: ColumnDef<RepairType>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -32,12 +32,19 @@ export const columns: ColumnDef<Task>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "id",
+    accessorKey: "repairCode",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Task" />
+      <DataTableColumnHeader column={column} title="Repair Code" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
-    enableSorting: false,
+    cell: ({ row }) => (
+      <Link
+        href={`/repairs/${row.getValue("repairCode")}`}
+        className="text-blue-500 hover:underline"
+      >
+        {row.getValue("repairCode")}
+      </Link>
+    ),
+    enableSorting: true,
     enableHiding: false,
   },
   {
@@ -45,18 +52,30 @@ export const columns: ColumnDef<Task>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Title" />
     ),
+    cell: ({ row }) => (
+      <span className="font-medium">{row.getValue("title")}</span>
+    ),
+    enableSorting: true,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "device",
+    header: "Device Info",
     cell: ({ row }) => {
-      const label = labels.find((label) => label.value === row.original.label);
-
+      const device = row.original.device;
       return (
-        <div className="flex space-x-2">
-          {label && <Badge variant="outline">{label.label}</Badge>}
-          <span className="max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]">
-            {row.getValue("title")}
-          </span>
+        <div>
+          <p className="text-sm font-medium">
+            {device.type} - {device.brand}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {device.model} (SN: {device.serialNumber || "N/A"})
+          </p>
         </div>
       );
     },
+    enableSorting: false,
+    enableHiding: true,
   },
   {
     accessorKey: "status",
@@ -64,22 +83,8 @@ export const columns: ColumnDef<Task>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const status = statuses.find(
-        (status) => status.value === row.getValue("status")
-      );
-
-      if (!status) {
-        return null;
-      }
-
-      return (
-        <div className="flex w-[100px] items-center">
-          {status.icon && (
-            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-          )}
-          <span>{status.label}</span>
-        </div>
-      );
+      const status = row.getValue("status");
+      return <Badge variant="outline">{status}</Badge>;
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
@@ -91,21 +96,11 @@ export const columns: ColumnDef<Task>[] = [
       <DataTableColumnHeader column={column} title="Priority" />
     ),
     cell: ({ row }) => {
-      const priority = priorities.find(
-        (priority) => priority.value === row.getValue("priority")
-      );
-
-      if (!priority) {
-        return null;
-      }
-
+      const priority = row.getValue("priority");
       return (
-        <div className="flex items-center">
-          {priority.icon && (
-            <priority.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-          )}
-          <span>{priority.label}</span>
-        </div>
+        <Badge variant={priority === "High" ? "destructive" : "outline"}>
+          {priority}
+        </Badge>
       );
     },
     filterFn: (row, id, value) => {

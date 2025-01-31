@@ -1,30 +1,35 @@
 "use client";
 import { toast } from "@/hooks/use-toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { useTasks } from "@/context/tasks-context";
-import { TasksImportDialog } from "./tasks-import-dialog";
-import { TasksMutateDrawer } from "./tasks-mutate-drawer";
+import { useRepairs } from "@/context/repairs-context";
+import { RepairsImportDialog } from "./repairs-import-dialog";
+import { RepairsMutateDrawer } from "./repairs-mutate-drawer";
 
-export function TasksDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useTasks();
+export function RepairsDialogs() {
+  const { open, setOpen, currentRow, setCurrentRow } = useRepairs();
+
   return (
     <>
-      <TasksMutateDrawer
-        key="task-create"
+      {/* Modal para crear una nueva reparación */}
+      <RepairsMutateDrawer
+        key="repair-create"
         open={open === "create"}
         onOpenChange={() => setOpen("create")}
       />
 
-      <TasksImportDialog
-        key="tasks-import"
+      {/* Modal para importar reparaciones */}
+      <RepairsImportDialog
+        key="repairs-import"
         open={open === "import"}
         onOpenChange={() => setOpen("import")}
       />
 
+      {/* Modales condicionales para editar o eliminar reparaciones */}
       {currentRow && (
         <>
-          <TasksMutateDrawer
-            key={`task-update-${currentRow.id}`}
+          {/* Modal para actualizar una reparación */}
+          <RepairsMutateDrawer
+            key={`repair-update-${currentRow.id}`}
             open={open === "update"}
             onOpenChange={() => {
               setOpen("update");
@@ -35,8 +40,9 @@ export function TasksDialogs() {
             currentRow={currentRow}
           />
 
+          {/* Diálogo de confirmación para eliminar una reparación */}
           <ConfirmDialog
-            key="task-delete"
+            key="repair-delete"
             destructive
             open={open === "delete"}
             onOpenChange={() => {
@@ -51,7 +57,7 @@ export function TasksDialogs() {
                 setCurrentRow(null);
               }, 500);
               toast({
-                title: "The following task has been deleted:",
+                title: "The following repair has been deleted:",
                 description: (
                   <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
                     <code className="text-white">
@@ -62,10 +68,10 @@ export function TasksDialogs() {
               });
             }}
             className="max-w-md"
-            title={`Delete this task: ${currentRow.id} ?`}
+            title={`Delete this repair: ${currentRow.id} ?`}
             desc={
               <>
-                You are about to delete a task with the ID{" "}
+                You are about to delete a repair with the ID{" "}
                 <strong>{currentRow.id}</strong>. <br />
                 This action cannot be undone.
               </>

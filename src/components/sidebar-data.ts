@@ -21,6 +21,7 @@ import {
 } from "@tabler/icons-react";
 import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-react";
 import { type SidebarData } from "@/components/types";
+import { Wrench } from "lucide-react";
 
 export const sidebarData: SidebarData = {
   user: {
@@ -55,9 +56,9 @@ export const sidebarData: SidebarData = {
           icon: IconLayoutDashboard,
         },
         {
-          title: "Tasks",
-          url: "/tasks",
-          icon: IconChecklist,
+          title: "Repairs",
+          url: "/repairs",
+          icon: Wrench,
         },
         {
           title: "Apps",

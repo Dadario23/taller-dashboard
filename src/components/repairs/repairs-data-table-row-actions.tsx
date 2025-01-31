@@ -15,9 +15,9 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTasks } from "@/context/tasks-context";
-import { labels } from "@/components/tasks/data/data";
-import { taskSchema } from "@/components/tasks/data/schema";
+import { useRepairs } from "@/context/repairs-context";
+import { Repair } from "@/components/repairs/data/schema";
+import { labels } from "./data/data";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -26,9 +26,9 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const task = taskSchema.parse(row.original);
+  const repair = row.original as Repair;
 
-  const { setOpen, setCurrentRow } = useTasks();
+  const { setOpen, setCurrentRow } = useRepairs();
 
   return (
     <DropdownMenu modal={false}>
@@ -44,7 +44,7 @@ export function DataTableRowActions<TData>({
       <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(task);
+            setCurrentRow(repair);
             setOpen("update");
           }}
         >
@@ -56,7 +56,7 @@ export function DataTableRowActions<TData>({
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
-            <DropdownMenuRadioGroup value={task.label}>
+            <DropdownMenuRadioGroup value={repair.label}>
               {labels.map((label) => (
                 <DropdownMenuRadioItem key={label.value} value={label.value}>
                   {label.label}
@@ -68,7 +68,7 @@ export function DataTableRowActions<TData>({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(task);
+            setCurrentRow(repair);
             setOpen("delete");
           }}
         >

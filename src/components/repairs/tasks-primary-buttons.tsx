@@ -1,10 +1,10 @@
 "use client";
 import { IconDownload, IconPlus } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
-import { useTasks } from "@/context/tasks-context";
+import { useRepairs } from "@/context/repairs-context";
 
 export function TasksPrimaryButtons() {
-  const { setOpen } = useTasks();
+  const { setOpen } = useRepairs();
   return (
     <div className="flex gap-2">
       <Button

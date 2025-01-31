@@ -44,7 +44,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-export function TasksImportDialog({ open, onOpenChange }: Props) {
+export function RepairsImportDialog({ open, onOpenChange }: Props) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { file: undefined },
@@ -92,13 +92,13 @@ export function TasksImportDialog({ open, onOpenChange }: Props) {
     >
       <DialogContent className="sm:max-w-sm gap-2">
         <DialogHeader className="text-left">
-          <DialogTitle>Import Tasks</DialogTitle>
+          <DialogTitle>Import Repairs</DialogTitle>
           <DialogDescription>
-            Import tasks quickly from a CSV file.
+            Import repairs quickly from a CSV file.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form id="task-import-form" onSubmit={form.handleSubmit(onSubmit)}>
+          <form id="repair-import-form" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               name="file"
@@ -123,7 +123,7 @@ export function TasksImportDialog({ open, onOpenChange }: Props) {
           <DialogClose asChild>
             <Button variant="outline">Close</Button>
           </DialogClose>
-          <Button type="submit" form="task-import-form">
+          <Button type="submit" form="repair-import-form">
             Import
           </Button>
         </DialogFooter>

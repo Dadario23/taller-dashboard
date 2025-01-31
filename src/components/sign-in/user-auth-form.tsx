@@ -80,7 +80,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
   const handleProviderSignIn = async (provider: string) => {
     try {
-      await signIn(provider, { callbackUrl: "/dashboard" });
+      await signIn(provider, { callbackUrl: "/dashboard", prompt: "none" });
     } catch (error) {
       toast({
         title: "Error al iniciar sesión",
