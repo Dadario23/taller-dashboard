@@ -62,9 +62,9 @@ const userSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["active", "inactive", "invited", "suspended"], // Valores posibles
-      default: "inactive",
+      enum: ["activo", "inactivo", "suspendido"], // Cambia los valores a español
     },
+
     repairs: [
       {
         type: String, // Relación indirecta con `repairCode` en la colección `repairs`

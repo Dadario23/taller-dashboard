@@ -38,7 +38,7 @@ const ticketSchema = new Schema(
           type: String,
         },
       },
-      problemDescription: {
+      flaw: {
         type: String,
         required: [true, "Problem description is required"],
       },

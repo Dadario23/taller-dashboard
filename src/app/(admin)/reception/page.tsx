@@ -12,7 +12,7 @@ const ReceptionPage = () => {
     brand: "",
     model: "",
     serialNumber: "",
-    problemDescription: "",
+    flaw: "",
     physicalCondition: "",
   });
 
@@ -38,7 +38,7 @@ const ReceptionPage = () => {
       brand: "",
       model: "",
       serialNumber: "",
-      problemDescription: "",
+      flaw: "",
       physicalCondition: "",
     });
   };
@@ -139,8 +139,8 @@ const ReceptionPage = () => {
               Descripción del problema
             </label>
             <textarea
-              name="problemDescription"
-              value={formData.problemDescription}
+              name="flaw"
+              value={formData.flaw}
               onChange={handleChange}
               className="w-full p-2 border rounded"
               rows={3}

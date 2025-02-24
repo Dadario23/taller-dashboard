@@ -10,14 +10,18 @@ import RepairsProvider from "@/context/repairs-context";
 import React, { useState } from "react";
 import { TasksPrimaryButtons } from "@/components/repairs/tasks-primary-buttons";
 import { RepairsDialogs } from "@/components/repairs/repairs-dialogs";
+import { Loader } from "lucide-react";
 
 export default function Repairs() {
   const [repairs, setRepairs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Estado para el LoaderCircle
 
   React.useEffect(() => {
     fetch("/api/repairs")
       .then((res) => res.json())
-      .then((data) => setRepairs(data));
+      .then((data) => setRepairs(data))
+      .catch((err) => console.error("Error fetching repairs:", err))
+      .finally(() => setIsLoading(false)); // Ocultamos el Loaderdespués de la carga
   }, []);
 
   return (
@@ -41,7 +45,13 @@ export default function Repairs() {
           <TasksPrimaryButtons />
         </div>
         <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
-          <RepairsDataTable data={repairs} columns={repairsColumns} />
+          {isLoading ? (
+            <div className="flex flex-col justify-center items-center min-h-[300px] w-full">
+              <Loader className="w-10 h-10 animate-spin" />
+            </div>
+          ) : (
+            <RepairsDataTable data={repairs} columns={repairsColumns} />
+          )}
         </div>
       </Main>
 

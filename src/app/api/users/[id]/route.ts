@@ -2,6 +2,29 @@ import { NextResponse } from "next/server";
 import User from "@/models/user";
 import { connectDB } from "@/lib/mongodb";
 
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await connectDB();
+
+    const userId = params.id;
+    const user = await User.findById(userId).select("-password"); // Excluir la contraseña
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(user, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return NextResponse.json(
+      { message: "Failed to fetch user", error: error.message },
+      { status: 500 }
+    );
+  }
+}
 export async function PATCH(
   req: Request,
   { params }: { params: { id: string } }

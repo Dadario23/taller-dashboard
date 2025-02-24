@@ -1,6 +1,5 @@
-import { z } from "zod";
+/* import { z } from "zod";
 
-// Esquema para validación de reparaciones
 export const repairSchema = z.object({
   id: z.string(),
   repairCode: z
@@ -23,15 +22,13 @@ export const repairSchema = z.object({
     email: z.string().email(),
     fullname: z.string(),
   }),
-  device: z.object({
-    type: z.string(),
-    brand: z.string(),
-    model: z.string(),
-    serialNumber: z.string().optional(),
-    physicalCondition: z.string().optional(),
-    problemDescription: z.string(),
-    passwordOrPattern: z.string().nullable(),
-  }),
+  device: z.enum([
+    "Celular",
+    "Tablet",
+    "CPU",
+    "Notebook",
+    "Consola de video juego",
+  ]),
   timeline: z.array(
     z.object({
       status: z.enum([
@@ -53,3 +50,4 @@ export const repairSchema = z.object({
 });
 
 export type Repair = z.infer<typeof repairSchema>;
+ */

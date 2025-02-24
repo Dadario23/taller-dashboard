@@ -52,5 +52,7 @@ export const config = {
     "/repairs/:path*",
     "/settings/:path*",
     "/users/:path*",
+    "/chats/:path*",
+    "/apps/:path*",
   ],
 };
