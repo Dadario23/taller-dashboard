@@ -73,6 +73,7 @@ const repairSchema = new Schema(
     // 🔥 Nueva estructura de garantía (simplificada)
     warranty: { type: Boolean, default: false },
     warrantyPeriod: { type: Number, default: null },
+    warrantyExpiresAt: { type: Date, default: null }, // 🔹 Nueva propiedad
 
     timeline: [
       {

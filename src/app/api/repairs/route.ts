@@ -2,7 +2,15 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/user";
 import Repair from "@/models/repairs";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
+interface TimelineEvent {
+  status: string;
+  timestamp: Date;
+  note: string;
+  changedBy: string;
+  roleAtChange: string;
+}
 export async function GET(req: Request) {
   try {
     await connectDB(); // Conectar a la DB
@@ -35,7 +43,7 @@ export async function GET(req: Request) {
         ...repair,
         createdAt: new Date(repair.createdAt).toISOString(),
         updatedAt: new Date(repair.updatedAt).toISOString(),
-        timeline: repair.timeline.map((t) => ({
+        timeline: repair.timeline.map((t: TimelineEvent) => ({
           ...t,
           timestamp: new Date(t.timestamp).toISOString(),
         })),
@@ -59,18 +67,22 @@ export async function GET(req: Request) {
             },
       };
 
-      // 🔹 Eliminar campos innecesarios
-      delete transformedRepair.customerId;
-      delete transformedRepair.technicianId; // Esto evita la duplicación
-
+      // 🔹 No es necesario eliminar customerId y technicianId, ya fueron renombrados
       return transformedRepair;
     });
 
     return NextResponse.json(transformedRepairs, { status: 200 });
   } catch (error) {
     console.error("Error fetching repairs:", error);
+
+    // Verificar si `error` es una instancia de `Error`
+    let errorMessage = "Error fetching repairs";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
     return NextResponse.json(
-      { message: "Error fetching repairs", error: error.message },
+      { message: "Error fetching repairs", error: errorMessage },
       { status: 500 }
     );
   }
@@ -93,13 +105,10 @@ export async function POST(req: Request) {
       receivedBy,
     } = body;
 
-    // Extraer `notes` del objeto `device`
-    const { notes } = device;
+    // Extraer `notes` y `flaw` del objeto `device`
+    const { notes, flaw } = device;
     console.log("Extracted notes from device:", notes); // Verificar el valor de `notes`
-
-    // Extraer `notes` del objeto `device`
-    const { flaw } = device;
-    console.log("Extracted notes from device:", notes); // Verificar el valor de `notes`
+    console.log("Extracted flaw from device:", flaw); // Verificar el valor de `flaw`
 
     if (!customerId) {
       return NextResponse.json(
@@ -147,7 +156,7 @@ export async function POST(req: Request) {
     const deviceData = {
       ...device,
       physicalCondition: device?.physicalCondition?.trim() || null, // Si es una cadena vacía, se convierte a null
-      notes: notes || null, // Asignar `notes` al objeto `device`
+      notes: notes || "", // Asignar `notes` al objeto `device`
     };
 
     console.log("Device data with notes:", deviceData); // Verificar el objeto `deviceData`
@@ -184,15 +193,114 @@ export async function POST(req: Request) {
 
     console.log("Repair saved successfully:", newRepair); // Verificar la reparación guardada
 
-    return NextResponse.json(
-      { message: "Repair created successfully", repair: newRepair },
-      { status: 201 }
+    // Poblar el campo `customerId` con los datos del cliente
+    const populatedRepair = await Repair.findById(newRepair._id).populate(
+      "customerId"
     );
+
+    if (!populatedRepair) {
+      return NextResponse.json(
+        { message: "No se pudo poblar la reparación" },
+        { status: 500 }
+      );
+    }
+
+    // 🚀 Generar el PDF con los datos de la reparación
+    const pdfBuffer = await generatePDF(populatedRepair);
+
+    // Devolver el PDF como respuesta para descargar
+    return new NextResponse(pdfBuffer, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename=ticket-${repairCode}.pdf`,
+      },
+    });
   } catch (error) {
     console.error("Error creating repair:", error);
     return NextResponse.json(
-      { message: "Error creating repair", error: error.message },
+      { message: "Error creating repair", error: (error as Error).message },
       { status: 500 }
     );
   }
+}
+
+async function generatePDF(repair: any) {
+  // Crear un nuevo documento PDF
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([170, 300]); // Tamaño ajustado para impresoras térmicas
+
+  // Cargar las fuentes necesarias
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+  // Configurar estilos
+  const fontSize = 10;
+  const lineHeight = 12;
+  let y = page.getHeight() - 20; // Empezar desde la parte superior
+
+  // Función para agregar texto al PDF
+  const addText = (text: string, x: number, y: number, bold = false) => {
+    page.drawText(text, {
+      x,
+      y,
+      size: fontSize,
+      font: bold ? boldFont : font, // Usar la fuente en negrita si es necesario
+      color: rgb(0, 0, 0),
+    });
+  };
+
+  // Encabezado del ticket
+  addText("TICKET DE REPARACIÓN", 10, y, true);
+  y -= lineHeight;
+  addText("-----------------------------", 10, y);
+  y -= lineHeight;
+
+  // Información de la reparación
+  addText(`Código: ${repair.repairCode}`, 10, y);
+  y -= lineHeight;
+  addText(`Título: ${repair.title}`, 10, y);
+  y -= lineHeight;
+  addText(`Estado: ${repair.status}`, 10, y);
+  y -= lineHeight;
+  addText("-----------------------------", 10, y);
+  y -= lineHeight;
+
+  // Información del cliente
+  addText("Cliente:", 10, y, true);
+  y -= lineHeight;
+  addText(`- ${repair.customerId.fullname}`, 15, y);
+  y -= lineHeight;
+  addText(`- ${repair.customerId.email}`, 15, y);
+  y -= lineHeight;
+  addText("-----------------------------", 10, y);
+  y -= lineHeight;
+
+  // Información del dispositivo
+  addText("Dispositivo:", 10, y, true);
+  y -= lineHeight;
+  addText(`- Tipo: ${repair.device.type}`, 15, y);
+  y -= lineHeight;
+  addText(`- Marca: ${repair.device.brand}`, 15, y);
+  y -= lineHeight;
+  addText(`- Modelo: ${repair.device.model}`, 15, y);
+  y -= lineHeight;
+  addText(`- Desperfecto: ${repair.device.flaw}`, 15, y);
+  y -= lineHeight;
+  addText(`- Observaciones: ${repair.device.notes}`, 15, y);
+  y -= lineHeight;
+  addText("-----------------------------", 10, y);
+  y -= lineHeight;
+
+  // Fecha de creación
+  addText(`Fecha: ${repair.createdAt.toLocaleDateString()}`, 10, y);
+  y -= lineHeight;
+
+  // Pie de página
+  addText("Gracias por confiar en nosotros", 10, y);
+  y -= lineHeight;
+  addText("www.tureparacion.com", 10, y);
+
+  // Guardar el PDF en un buffer
+  const pdfBytes = await pdfDoc.save();
+  return pdfBytes;
 }
