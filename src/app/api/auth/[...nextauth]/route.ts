@@ -1,11 +1,20 @@
+"use client";
+
 import { connectDB } from "@/lib/mongodb";
-import User from "@/models/user";
-import NextAuth, { AuthOptions } from "next-auth";
+import UserModel from "@/models/user"; // Renombrado a UserModel
+import NextAuth, {
+  NextAuthOptions,
+  User,
+  Account,
+  Profile,
+  Session,
+} from "next-auth";
+import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 
-export const authOptions: AuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     // Proveedor de credenciales
     CredentialsProvider({
@@ -26,7 +35,7 @@ export const authOptions: AuthOptions = {
 
           await connectDB();
 
-          const userFound = await User.findOne({
+          const userFound = await UserModel.findOne({
             email: credentials.email,
           }).select("email password role fullname");
 
@@ -66,12 +75,20 @@ export const authOptions: AuthOptions = {
   ],
 
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({
+      user,
+      account,
+      profile,
+    }: {
+      user: User;
+      account: Account | null;
+      profile?: Profile;
+    }) {
       await connectDB();
 
       if (account?.provider === "google") {
         // Busca al usuario por el `googleId` o por su correo electrónico
-        const existingUser = await User.findOne({
+        const existingUser = await UserModel.findOne({
           $or: [{ googleId: profile?.sub }, { email: profile?.email }],
         });
 
@@ -87,7 +104,7 @@ export const authOptions: AuthOptions = {
             existingUser.role === "admin" ? "/dashboard" : "/home";
         } else {
           // Si no existe, crea un nuevo usuario con el ID de Google
-          const newUser = await User.create({
+          const newUser = await UserModel.create({
             email: profile?.email,
             fullname: profile?.name,
             provider: "google",
@@ -104,7 +121,15 @@ export const authOptions: AuthOptions = {
       return true;
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({
+      token,
+      user,
+      account,
+    }: {
+      token: JWT;
+      user?: User;
+      account?: Account | null; // Ajustado para coincidir con el tipo esperado
+    }) {
       if (user) {
         token.id = account?.provider === "google" ? user.id : user.id; // Ajustado para claridad
         token.email = user.email;
@@ -116,7 +141,8 @@ export const authOptions: AuthOptions = {
       console.log("Token generado:", token); // Registro para depuración
       return token;
     },
-    async session({ session, token }) {
+
+    async session({ session, token }: { session: Session; token: JWT }) {
       session.user = {
         id: token.id as string,
         email: token.email as string,
