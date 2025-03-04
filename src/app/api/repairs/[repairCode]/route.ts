@@ -5,12 +5,12 @@ import User from "@/models/user";
 
 export async function GET(
   req: Request,
-  { params }: { params: { repairCode: string } }
+  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = await params;
+    const { repairCode } = params; // Usamos directamente params.repairCode
     const repair = await Repair.findOne({ repairCode }).populate(
       "customer",
       "fullname email"
@@ -44,12 +44,12 @@ const sendNotification = async (userId: string, message: string) => {
 
 export async function PUT(
   req: Request,
-  { params }: { params: { repairCode: string } }
+  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = await params;
+    const { repairCode } = params; // Usamos directamente params.repairCode
     const { status, note, changedBy } = await req.json(); // Obtén los datos del body
 
     // Validar que se proporcione un estado
@@ -153,12 +153,12 @@ export async function PUT(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { repairCode: string } }
+  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params;
+    const { repairCode } = params; // Usamos directamente params.repairCode
     const { status, note, changedBy } = await req.json();
 
     // Validar que se proporcione un estado
@@ -237,12 +237,12 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { repairCode: string } }
+  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params;
+    const { repairCode } = params; // Usamos directamente params.repairCode
 
     const repair = await Repair.findOneAndDelete({ repairCode });
 
