@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Fragment } from "react/jsx-runtime";
 import { format } from "date-fns";
 import {
@@ -25,40 +25,65 @@ import { Main } from "@/components/layout/main";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
-// Fake Data
-import data from "@/components/chats/data/convo.json";
-const conversations = data.conversations;
-
-type ChatUser = (typeof conversations)[number];
-type Convo = ChatUser["messages"][number];
+type ChatUser = {
+  id: string;
+  profile: string;
+  username: string;
+  fullName: string;
+  title: string;
+  messages: {
+    sender: string;
+    message: string;
+    timestamp: string;
+  }[];
+};
 
 export default function Chats() {
   const [search, setSearch] = useState("");
-  const [selectedUser, setSelectedUser] = useState<ChatUser>(conversations[0]);
+  const [conversations, setConversations] = useState<ChatUser[]>([]);
+  const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
   const [mobileSelectedUser, setMobileSelectedUser] = useState<ChatUser | null>(
     null
   );
+
+  // Cargar el JSON dinámicamente
+  useEffect(() => {
+    import("@/components/chats/data/convo.json")
+      .then((data) => {
+        setConversations(data.conversations);
+        setSelectedUser(data.conversations[0]); // Selecciona el primer usuario por defecto
+      })
+      .catch((err) => console.error("Error cargando conversaciones:", err));
+  }, []);
+
+  if (conversations.length === 0) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-lg font-semibold">Cargando conversaciones...</p>
+      </div>
+    );
+  }
 
   // Filtrar conversaciones basadas en la búsqueda
   const filteredChatList = conversations.filter(({ fullName }) =>
     fullName.toLowerCase().includes(search.trim().toLowerCase())
   );
-  const currentMessage = selectedUser.messages.reduce(
-    (acc: Record<string, Convo[]>, obj) => {
-      const key = format(obj.timestamp, "d MMM, yyyy");
 
-      // Create an array for the category if it doesn't exist
-      if (!acc[key]) {
-        acc[key] = [];
-      }
+  const currentMessage = selectedUser
+    ? selectedUser.messages.reduce(
+        (acc: Record<string, ChatUser["messages"][number][]>, obj) => {
+          const key = format(new Date(obj.timestamp), "d MMM, yyyy");
 
-      // Push the current object to the array
-      acc[key].push(obj);
+          if (!acc[key]) {
+            acc[key] = [];
+          }
 
-      return acc;
-    },
-    {}
-  );
+          acc[key].push(obj);
+          return acc;
+        },
+        {}
+      )
+    : {};
 
   return (
     <>
@@ -114,7 +139,7 @@ export default function Chats() {
                       type="button"
                       className={cn(
                         `-mx-1 flex w-full rounded-md px-2 py-2 text-left text-sm hover:bg-secondary/75`,
-                        selectedUser.id === id && "sm:bg-muted"
+                        selectedUser?.id === id && "sm:bg-muted"
                       )}
                       onClick={() => {
                         setSelectedUser(chatUsr);
@@ -150,62 +175,63 @@ export default function Chats() {
               mobileSelectedUser && "left-0 flex"
             )}
           >
-            {/* Top Part */}
-            <div className="mb-1 flex flex-none justify-between rounded-t-md bg-secondary p-4 shadow-lg">
-              {/* Left */}
-              <div className="flex gap-3">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="-ml-2 h-full sm:hidden"
-                  onClick={() => setMobileSelectedUser(null)}
-                >
-                  <IconArrowLeft />
-                </Button>
-                <div className="flex items-center gap-2 lg:gap-4">
-                  <Avatar className="size-9 lg:size-11">
-                    <AvatarImage
-                      src={selectedUser.profile}
-                      alt={selectedUser.username}
-                    />
-                    <AvatarFallback>{selectedUser.username}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <span className="col-start-2 row-span-2 text-sm font-medium lg:text-base">
-                      {selectedUser.fullName}
-                    </span>
-                    <span className="col-start-2 row-span-2 row-start-2 line-clamp-1 block max-w-32 text-ellipsis text-nowrap text-xs text-muted-foreground lg:max-w-none lg:text-sm">
-                      {selectedUser.title}
-                    </span>
+            {selectedUser && (
+              <div className="mb-1 flex flex-none justify-between rounded-t-md bg-secondary p-4 shadow-lg">
+                {/* Left */}
+                <div className="flex gap-3">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="-ml-2 h-full sm:hidden"
+                    onClick={() => setMobileSelectedUser(null)}
+                  >
+                    <IconArrowLeft />
+                  </Button>
+                  <div className="flex items-center gap-2 lg:gap-4">
+                    <Avatar className="size-9 lg:size-11">
+                      <AvatarImage
+                        src={selectedUser.profile}
+                        alt={selectedUser.username}
+                      />
+                      <AvatarFallback>{selectedUser.username}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <span className="col-start-2 row-span-2 text-sm font-medium lg:text-base">
+                        {selectedUser.fullName}
+                      </span>
+                      <span className="col-start-2 row-span-2 row-start-2 line-clamp-1 block max-w-32 text-ellipsis text-nowrap text-xs text-muted-foreground lg:max-w-none lg:text-sm">
+                        {selectedUser.title}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Right */}
-              <div className="-mr-1 flex items-center gap-1 lg:gap-2">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hidden size-8 rounded-full sm:inline-flex lg:size-10"
-                >
-                  <IconVideo size={22} className="stroke-muted-foreground" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="hidden size-8 rounded-full sm:inline-flex lg:size-10"
-                >
-                  <IconPhone size={22} className="stroke-muted-foreground" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-10 rounded-md sm:h-8 sm:w-4 lg:h-10 lg:w-6"
-                >
-                  <IconDotsVertical className="stroke-muted-foreground sm:size-5" />
-                </Button>
+                {/* Right */}
+                <div className="-mr-1 flex items-center gap-1 lg:gap-2">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="hidden size-8 rounded-full sm:inline-flex lg:size-10"
+                  >
+                    <IconVideo size={22} className="stroke-muted-foreground" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="hidden size-8 rounded-full sm:inline-flex lg:size-10"
+                  >
+                    <IconPhone size={22} className="stroke-muted-foreground" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-10 rounded-md sm:h-8 sm:w-4 lg:h-10 lg:w-6"
+                  >
+                    <IconDotsVertical className="stroke-muted-foreground sm:size-5" />
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Conversation */}
             <div className="flex flex-1 flex-col gap-2 rounded-md px-4 pb-4 pt-0">
