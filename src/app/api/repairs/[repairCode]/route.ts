@@ -5,12 +5,12 @@ import User from "@/models/user";
 
 export async function GET(
   req: Request,
-  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
+  context: { params: { repairCode: string } }
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params; // Usamos directamente params.repairCode
+    const { repairCode } = context.params; // Corrección aquí
     const repair = await Repair.findOne({ repairCode }).populate(
       "customer",
       "fullname email"
@@ -33,26 +33,16 @@ export async function GET(
   }
 }
 
-// Función simulada para enviar notificaciones
-const sendNotification = async (userId: string, message: string) => {
-  const user = await User.findById(userId);
-  if (user && user.email) {
-    console.log(`Enviando notificación a ${user.email}: ${message}`);
-    // Aquí podrías integrar un servicio de correo electrónico o mensajería
-  }
-};
-
 export async function PUT(
   req: Request,
-  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
+  context: { params: { repairCode: string } }
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params; // Usamos directamente params.repairCode
-    const { status, note, changedBy } = await req.json(); // Obtén los datos del body
+    const { repairCode } = context.params; // Corrección aquí
+    const { status, note, changedBy } = await req.json();
 
-    // Validar que se proporcione un estado
     if (!status) {
       return NextResponse.json(
         { error: "Status is required" },
@@ -60,7 +50,6 @@ export async function PUT(
       );
     }
 
-    // Validar que el estado sea válido
     const validStatuses = [
       "Pending",
       "Under Review",
@@ -80,9 +69,7 @@ export async function PUT(
       );
     }
 
-    // Buscar la reparación por su repairCode
     const repair = await Repair.findOne({ repairCode });
-
     if (!repair) {
       return NextResponse.json(
         { message: "Repair not found" },
@@ -90,7 +77,6 @@ export async function PUT(
       );
     }
 
-    // Validar si el usuario que realiza la actualización tiene permisos
     const user = await User.findById(changedBy);
     if (!user || !["technician", "admin", "superadmin"].includes(user.role)) {
       return NextResponse.json(
@@ -99,7 +85,6 @@ export async function PUT(
       );
     }
 
-    // Validar que solo los técnicos puedan cambiar el estado a "In Progress"
     if (status === "In Progress" && user.role !== "technician") {
       return NextResponse.json(
         { error: "Only technicians can set the status to 'In Progress'." },
@@ -107,36 +92,18 @@ export async function PUT(
       );
     }
 
-    // Obtener el rol del usuario que realiza el cambio
     const roleAtChange = user.role;
-
-    // Actualizar el timeline con el nuevo estado
     repair.timeline.push({
       status,
-      previousStatus: repair.status, // Guarda el estado anterior
+      previousStatus: repair.status,
       timestamp: new Date(),
       note,
       changedBy,
-      roleAtChange, // Asegúrate de incluir el rol del usuario
+      roleAtChange,
     });
 
-    // Actualizar el estado actual
     repair.status = status;
-
-    // Guardar cambios
     await repair.save();
-
-    // Enviar notificaciones
-    await sendNotification(
-      repair.customer,
-      `El estado de tu reparación (${repair.repairCode}) ha cambiado a "${status}".`
-    );
-    if (repair.technicianId) {
-      await sendNotification(
-        repair.technicianId,
-        `El estado de la reparación (${repair.repairCode}) ha cambiado a "${status}".`
-      );
-    }
 
     return NextResponse.json(
       { message: "Repair status updated successfully", repair },
@@ -153,15 +120,14 @@ export async function PUT(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
+  context: { params: { repairCode: string } }
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params; // Usamos directamente params.repairCode
+    const { repairCode } = context.params; // Corrección aquí
     const { status, note, changedBy } = await req.json();
 
-    // Validar que se proporcione un estado
     if (!status) {
       return NextResponse.json(
         { error: "Status is required" },
@@ -169,7 +135,6 @@ export async function PATCH(
       );
     }
 
-    // Validar que el estado sea válido
     const validStatuses = [
       "Pending",
       "Under Review",
@@ -189,9 +154,7 @@ export async function PATCH(
       );
     }
 
-    // Buscar la reparación por su código
     const repair = await Repair.findOne({ repairCode });
-
     if (!repair) {
       return NextResponse.json(
         { message: "Repair not found" },
@@ -199,7 +162,6 @@ export async function PATCH(
       );
     }
 
-    // Validar si el usuario que realiza la actualización tiene permisos
     const user = await User.findById(changedBy);
     if (!user || !["technician", "admin", "superadmin"].includes(user.role)) {
       return NextResponse.json(
@@ -208,7 +170,6 @@ export async function PATCH(
       );
     }
 
-    // Actualizar el timeline con el nuevo estado
     repair.timeline.push({
       status,
       timestamp: new Date(),
@@ -216,10 +177,7 @@ export async function PATCH(
       changedBy,
     });
 
-    // Actualizar el estado actual
     repair.status = status;
-
-    // Guardar cambios
     await repair.save();
 
     return NextResponse.json(
@@ -237,13 +195,12 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
+  context: { params: { repairCode: string } }
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params; // Usamos directamente params.repairCode
-
+    const { repairCode } = context.params; // Corrección aquí
     const repair = await Repair.findOneAndDelete({ repairCode });
 
     if (!repair) {
