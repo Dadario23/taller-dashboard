@@ -28,19 +28,16 @@ export function RepairFields({ form }: RepairFieldsProps) {
   const [customers, setCustomers] = useState<
     { _id: string; fullname: string }[]
   >([]);
-  const deviceTypes = [
-    "Celular",
-    "CPU",
-    "Notebook",
-    "Tablet",
-    "Consola de video juego",
-  ] as const;
-  type DeviceType = (typeof deviceTypes)[number];
+  type DeviceType =
+    | "Celular"
+    | "CPU"
+    | "Notebook"
+    | "Tablet"
+    | "Consola de video juego";
 
   const [selectedDevice, setSelectedDevice] = useState<DeviceType | null>(null);
 
   const [selectedBrand, setSelectedBrand] = useState<string>("");
-  const [selectedModel, setSelectedModel] = useState<string>("");
 
   useEffect(() => {
     getCustomers().then(setCustomers);
@@ -84,16 +81,9 @@ export function RepairFields({ form }: RepairFieldsProps) {
                   defaultValue={field.value}
                   onValueChange={(value) => {
                     field.onChange(value);
-                    setSelectedDevice(
-                      value as
-                        | "Celular"
-                        | "Tablet"
-                        | "CPU"
-                        | "Notebook"
-                        | "Consola de video juego"
-                    );
+                    setSelectedDevice(value as DeviceType);
+
                     setSelectedBrand("");
-                    setSelectedModel("");
                   }}
                   placeholder="Selecciona un dispositivo"
                   items={Object.keys(deviceIssues).map((device) => ({
@@ -135,7 +125,6 @@ export function RepairFields({ form }: RepairFieldsProps) {
                       } else {
                         setSelectedBrand(value);
                       }
-                      setSelectedModel(""); // Siempre reseteamos el modelo al cambiar la marca
                     }}
                     placeholder="Selecciona una marca"
                     items={uniqueBrands.map((brand) => ({

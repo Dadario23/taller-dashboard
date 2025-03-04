@@ -102,7 +102,7 @@ export function RepairsImportDialog({ open, onOpenChange }: Props) {
             <FormField
               control={form.control}
               name="file"
-              render={({ field, fieldState }) => (
+              render={({ fieldState }) => (
                 <FormItem className="space-y-1 mb-2">
                   <FormLabel>File</FormLabel>
                   <FormControl>
