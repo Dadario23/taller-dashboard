@@ -3,7 +3,7 @@ import { z } from "zod";
 export const formSchema = z
   .object({
     device: z.string().min(1, "El dispositivo es requerido."),
-    customerId: z.string().min(1, "Customer is required."),
+    customer: z.string().min(1, "Customer is required."),
     flaw: z.string().min(1, "Issue is required."),
     priority: z.enum(["Normal", "Alta", "Urgente"]),
     brand: z.string().min(1, "Brand is required."),

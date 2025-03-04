@@ -38,7 +38,7 @@ const seedData = async () => {
         { brand: "Samsung", model: "Galaxy S21" },
         { brand: "Apple", model: "iPhone 13" },
       ],
-      Computadora: [
+      CPU: [
         { brand: "Dell", model: "XPS 15" },
         { brand: "Apple", model: "MacBook Pro M1" },
       ],
@@ -46,7 +46,7 @@ const seedData = async () => {
         { brand: "Samsung", model: "Galaxy Tab S7" },
         { brand: "Apple", model: "iPad Air 4" },
       ],
-      Consola: [
+      "Consola de video juego": [
         { brand: "Sony", model: "PlayStation 5" },
         { brand: "Microsoft", model: "Xbox Series X" },
       ],
@@ -121,6 +121,7 @@ const seedData = async () => {
               "Sin daños físicos",
             ]),
             problemDescription,
+            flaw: problemDescription, // Agregar el campo `flaw` con el valor de `problemDescription`
           };
 
           timeline.push({
@@ -226,8 +227,8 @@ const seedData = async () => {
             status,
             priority,
             device,
-            customerId: customer._id,
-            technicianId: technician._id,
+            customer: customer._id,
+            technician: technician._id,
             receivedBy: receivedBy._id,
             repairVerifiedBy: technician._id,
             estimatedCompletion:

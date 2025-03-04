@@ -12,7 +12,7 @@ export async function GET(
 
     const { repairCode } = await params;
     const repair = await Repair.findOne({ repairCode }).populate(
-      "customerId",
+      "customer",
       "fullname email"
     );
 
@@ -128,7 +128,7 @@ export async function PUT(
 
     // Enviar notificaciones
     await sendNotification(
-      repair.customerId,
+      repair.customer,
       `El estado de tu reparación (${repair.repairCode}) ha cambiado a "${status}".`
     );
     if (repair.technicianId) {

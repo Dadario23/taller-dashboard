@@ -1,6 +1,6 @@
 export interface RepairData {
   title: string;
-  customerId: string;
+  customer: string;
   receivedBy: string;
   device: {
     type: string;

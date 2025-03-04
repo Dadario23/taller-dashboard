@@ -1,256 +1,213 @@
 "use client";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { repairSchema, RepairForm } from "../schemas/repairSchema";
+import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import {
-  deviceIssues,
-  deviceBrandsAndModels,
-  physicalConditions,
-} from "../data/constants";
-import { Combobox, SelectDropdown, Textarea } from "@/components/ui"; // Ajusta las importaciones según tu estructura
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { RepairsForm, formSchema } from "@/components/repairs/data/schema";
+import { createRepair, getUserIdByEmail } from "@/lib/api";
+import { RepairFields } from "./RepairFields";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
-export function RepairForm({ onSubmit, initialValues }) {
-  const form = useForm<RepairForm>({
-    resolver: zodResolver(repairSchema),
-    defaultValues: initialValues,
+interface Props {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  currentRow?: RepairsForm;
+}
+
+export function RepairForm({ open, onOpenChange, currentRow }: Props) {
+  const { data: session } = useSession();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
+  const isUpdate = !!currentRow;
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      getUserIdByEmail(session.user.email).then(setUserId);
+    }
+  }, [session?.user?.email]);
+
+  const form = useForm<RepairsForm>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      device: currentRow?.device || "",
+      customer: currentRow?.customer || "",
+      flaw: currentRow?.flaw || "",
+      priority: currentRow?.priority || "Normal",
+      brand: currentRow?.brand || "",
+      model: currentRow?.model || "",
+      physicalCondition: currentRow?.physicalCondition || "",
+      notes: currentRow?.notes || "",
+    },
   });
 
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        device: currentRow?.device || "",
+        customer: currentRow?.customer || "",
+        flaw: currentRow?.flaw || "",
+        priority: currentRow?.priority || "Normal",
+        brand: currentRow?.brand || "",
+        model: currentRow?.model || "",
+        physicalCondition: currentRow?.physicalCondition || "",
+        notes: currentRow?.notes || "",
+      });
+    }
+  }, [open, currentRow, form]);
+
+  const onSubmit = async (data: RepairsForm) => {
+    if (!userId) {
+      toast({
+        title: "Error",
+        description: "No se ha podido obtener el usuario autenticado.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    const repairData = {
+      title: `Reparación de ${data.device}`,
+      customer: data.customer,
+      receivedBy: userId,
+      device: {
+        type: data.device,
+        brand: data.brand,
+        model: data.model,
+        physicalCondition: data.physicalCondition,
+        flaw: data.flaw,
+        notes: data.notes,
+      },
+      priority: data.priority,
+    };
+
+    const pdfUrl = await createRepair(repairData);
+    if (pdfUrl) {
+      setPdfUrl(pdfUrl);
+      setShowPrintDialog(true); // Mostrar el diálogo de impresión
+      toast({
+        title: "Reparación creada",
+        description: "El ticket se generó correctamente.",
+      });
+      onOpenChange(false);
+      form.reset();
+    } else {
+      toast({
+        title: "Error",
+        description: "No se pudo crear la reparación.",
+        variant: "destructive",
+      });
+    }
+    setIsLoading(false);
+  };
+
   return (
-    <Form {...form}>
-      {/* Contenedor del formulario con desplazamiento */}
-      <div className="space-y-4 overflow-y-auto flex-1">
-        {/* Select de Cliente */}
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent className="flex flex-col h-full">
+          <SheetHeader className="text-left">
+            <SheetTitle>
+              {isUpdate ? "Actualizar Reparación" : "Nueva Reparación"}
+            </SheetTitle>
+            <SheetDescription>
+              {isUpdate
+                ? "Actualiza la reparación con la información necesaria."
+                : "Añade una nueva reparación proporcionando la información requerida."}
+            </SheetDescription>
+          </SheetHeader>
 
-        <FormField
-          control={form.control}
-          name="customerId"
-          render={({ field }) => (
-            <FormItem className="grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0">
-              <FormLabel className="col-span-2 text-right">Cliente</FormLabel>
-              <FormControl>
-                <Combobox
-                  options={customers.map((user) => ({
-                    label: `${user.fullname} - ${user.email}`,
-                    value: user._id,
-                  }))}
-                  value={field.value}
-                  onChange={field.onChange}
-                  placeholder="Selecciona un cliente"
-                  className="col-span-4"
-                />
-              </FormControl>
-              <FormMessage className="col-span-4 col-start-3" />
-            </FormItem>
-          )}
-        />
-        {/* Select de Dispositivo */}
-        <FormField
-          control={form.control}
-          name="device"
-          render={({ field }) => (
-            <FormItem className="grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0">
-              <FormLabel className="col-span-2 text-right">
-                Dispositivo
-              </FormLabel>
-              <FormControl>
-                <SelectDropdown
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    setSelectedDevice(value);
-                    setSelectedBrand(""); // Resetear la marca cuando cambia el dispositivo
-                    setSelectedModel(""); // Resetear el modelo cuando cambia el dispositivo
-                  }}
-                  placeholder="Selecciona un dispositivo"
-                  className="col-span-4"
-                  items={Object.keys(deviceIssues).map((device) => ({
-                    label: device,
-                    value: device,
-                  }))}
-                />
-              </FormControl>
-              <FormMessage className="col-span-4 col-start-3" />
-            </FormItem>
-          )}
-        />
-        {/* Select de Condiciones Físicas */}
-        <FormField
-          control={form.control}
-          name="physicalCondition"
-          render={({ field }) => (
-            <FormItem className="grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0">
-              <FormLabel className="col-span-2 text-right">Estado</FormLabel>
-              <FormControl>
-                <SelectDropdown
-                  defaultValue={field.value}
-                  onValueChange={field.onChange}
-                  placeholder="Selecciona un estado"
-                  className="col-span-4"
-                  items={physicalConditions.map((condition) => ({
-                    label: condition,
-                    value: condition,
-                  }))}
-                />
-              </FormControl>
-              <FormMessage className="col-span-4 col-start-3" />
-            </FormItem>
-          )}
-        />
-        {/* Select de Marca (depende de Dispositivo) */}
-        <FormField
-          control={form.control}
-          name="brand"
-          render={({ field }) => (
-            <FormItem className="grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0">
-              <FormLabel className="col-span-2 text-right">Marca</FormLabel>
-              <FormControl>
-                <SelectDropdown
-                  defaultValue={field.value}
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    setSelectedBrand(value);
-                    setSelectedModel(""); // Resetear el modelo cuando cambia la marca
-                  }}
-                  placeholder="Selecciona una marca"
-                  className="col-span-4"
-                  items={
-                    selectedDevice
-                      ? deviceBrandsAndModels[selectedDevice].marcas.map(
-                          (brand) => ({
-                            label: brand,
-                            value: brand,
-                          })
-                        )
-                      : []
-                  }
-                  disabled={!selectedDevice} // Deshabilitar si no hay dispositivo seleccionado
-                />
-              </FormControl>
-              <FormMessage className="col-span-4 col-start-3" />
-            </FormItem>
-          )}
-        />
-        {/* Select de Modelo (depende de Marca) */}
-        <FormField
-          control={form.control}
-          name="model"
-          render={({ field }) => (
-            <FormItem className="grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0">
-              <FormLabel className="col-span-2 text-right">Modelo</FormLabel>
-              <FormControl>
-                <SelectDropdown
-                  defaultValue={field.value}
-                  onValueChange={field.onChange}
-                  placeholder="Selecciona un modelo"
-                  className="col-span-4"
-                  items={
-                    selectedBrand && selectedBrand !== "Sin especificar"
-                      ? deviceBrandsAndModels[selectedDevice].modelos[
-                          selectedBrand
-                        ].map((model) => ({
-                          label: model,
-                          value: model,
-                        }))
-                      : []
-                  }
-                  disabled={
-                    !selectedBrand || selectedBrand === "Sin especificar"
-                  } // Deshabilitar si no hay marca seleccionada o si es "Sin especificar"
-                />
-              </FormControl>
-              <FormMessage className="col-span-4 col-start-3" />
-            </FormItem>
-          )}
-        />
-        {/* Select de Desperfecto */}
-        <FormField
-          control={form.control}
-          name="issue"
-          render={({ field }) => (
-            <FormItem className="grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0">
-              <FormLabel className="col-span-2 text-right">
-                Desperfecto
-              </FormLabel>
-              <FormControl>
-                <SelectDropdown
-                  defaultValue={field.value}
-                  onValueChange={field.onChange}
-                  placeholder="Selecciona un desperfecto"
-                  className="col-span-4"
-                  items={
-                    selectedDevice
-                      ? deviceIssues[selectedDevice].map((issue) => ({
-                          label: issue,
-                          value: issue,
-                        }))
-                      : []
-                  }
-                  disabled={!selectedDevice} // Deshabilitar si no hay dispositivo seleccionado
-                />
-              </FormControl>
-              <FormMessage className="col-span-4 col-start-3" />
-            </FormItem>
-          )}
-        />
-        {/* Select de Prioridad */}
-        <FormField
-          control={form.control}
-          name="priority"
-          render={({ field }) => (
-            <FormItem className="grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0">
-              <FormLabel className="col-span-2 text-right">Prioridad</FormLabel>
-              <FormControl>
-                <SelectDropdown
-                  defaultValue={field.value}
-                  onValueChange={field.onChange}
-                  placeholder="Selecciona una prioridad"
-                  className="col-span-4"
-                  items={["Normal", "Alta", "Urgente"].map((priority) => ({
-                    label: priority,
-                    value: priority,
-                  }))}
-                />
-              </FormControl>
-              <FormMessage className="col-span-4 col-start-3" />
-            </FormItem>
-          )}
-        />
-        {/* TextArea de Observaciones */}
-        <FormField
-          control={form.control}
-          name="observations"
-          render={({ field }) => (
-            <FormItem className="grid grid-cols-6 items-center gap-x-4 gap-y-1 space-y-0">
-              <FormLabel className="col-span-2 text-right">Notas</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  placeholder="Ingresa observaciones adicionales"
-                  className="col-span-4"
-                  maxLength={90} // Límite de 90 caracteres
-                  rows={3} // Número de filas visibles
-                />
-              </FormControl>
-              <FormDescription className="col-span-4 col-start-3 text-sm text-gray-500">
-                Máximo 90 caracteres.
-              </FormDescription>
-              <FormMessage className="col-span-4 col-start-3" />
-            </FormItem>
-          )}
-        />
-      </div>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex-1 overflow-y-auto space-y-4"
+          >
+            <RepairFields form={form} />
+          </form>
 
-      <SheetFooter className="mt-4 flex flex-col sm:flex-row sm:space-x-2">
-        <Button
-          type="submit"
-          onClick={form.handleSubmit(onSubmit)}
-          className="mb-2 sm:mb-0"
-        >
-          Guardar
-        </Button>
-        <SheetClose asChild>
-          <Button variant="outline">Cancelar</Button>
-        </SheetClose>
-      </SheetFooter>
-    </Form>
+          <SheetFooter className="mt-4 flex flex-col sm:flex-row sm:space-x-2">
+            <Button
+              type="submit"
+              onClick={form.handleSubmit(onSubmit)}
+              disabled={isLoading}
+            >
+              {isLoading ? "Cargando..." : "Crear"}
+            </Button>
+
+            <SheetClose asChild>
+              <Button variant="outline">Cancelar</Button>
+            </SheetClose>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      {/* Diálogo de impresión */}
+      <AlertDialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Deseas imprimir el ticket?</AlertDialogTitle>
+            <AlertDialogDescription>
+              El ticket de la reparación se ha generado correctamente. ¿Quieres
+              imprimirlo o descargarlo?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pdfUrl) {
+                  const link = document.createElement("a");
+                  link.href = pdfUrl;
+                  link.download = `ticket-${Date.now()}.pdf`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }
+                setShowPrintDialog(false);
+              }}
+            >
+              Descargar
+            </AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => {
+                if (pdfUrl) {
+                  const iframe = document.createElement("iframe");
+                  iframe.style.display = "none";
+                  iframe.src = pdfUrl;
+                  document.body.appendChild(iframe);
+                  iframe.onload = () => {
+                    iframe.contentWindow?.print();
+                  };
+                }
+                setShowPrintDialog(false);
+              }}
+            >
+              Imprimir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

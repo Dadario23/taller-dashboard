@@ -3,14 +3,16 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/user";
 import Repair from "@/models/repairs";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-
+import { Schema, Types } from "mongoose";
 interface TimelineEvent {
   status: string;
+  previousStatus?: string;
   timestamp: Date;
-  note: string;
-  changedBy: string;
-  roleAtChange: string;
+  note?: string;
+  changedBy: Schema.Types.ObjectId;
+  roleAtChange: "admin" | "superadmin" | "technician" | "user" | "reception";
 }
+
 export async function GET(req: Request) {
   try {
     await connectDB(); // Conectar a la DB
@@ -19,23 +21,23 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
     const priority = searchParams.get("priority");
-    const technicianId = searchParams.get("technicianId");
-    const customerId = searchParams.get("customerId");
+    const technician = searchParams.get("technician"); // Cambiado de technicianId → technician
+    const customer = searchParams.get("customer"); // Cambiado de customerId → customer
     const repairCode = searchParams.get("repairCode");
 
     // Construir filtros dinámicos
     const filters: any = {};
     if (status) filters.status = status;
     if (priority) filters.priority = priority;
-    if (technicianId) filters.technicianId = technicianId;
-    if (customerId) filters.customerId = customerId;
+    if (technician) filters.technician = technician; // Cambiado de technicianId → technician
+    if (customer) filters.customer = customer; // Cambiado de customerId → customer
     if (repairCode) filters.repairCode = repairCode;
 
     await User.findOne(); // 👈 Esto fuerza a Mongoose a registrar `User` antes de `Repair`
 
     const repairs = await Repair.find(filters)
-      .populate("customerId", "fullname email")
-      .populate("technicianId", "fullname")
+      .populate("customer", "fullname email") // Cambiado de customerId → customer
+      .populate("technician", "fullname") // Cambiado de technicianId → technician
       .lean();
 
     const transformedRepairs = repairs.map((repair) => {
@@ -47,11 +49,11 @@ export async function GET(req: Request) {
           ...t,
           timestamp: new Date(t.timestamp).toISOString(),
         })),
-        customer: repair.customerId, // Renombramos customerId → customer
-        technician: repair.technicianId
+        customer: repair.customer, // Ya no es necesario renombrar
+        technician: repair.technician
           ? {
-              _id: repair.technicianId._id,
-              fullname: repair.technicianId.fullname,
+              _id: repair.technician._id,
+              fullname: repair.technician.fullname,
               waitingTimeHours: null, // No se aplica si el técnico está asignado
             }
           : {
@@ -67,22 +69,14 @@ export async function GET(req: Request) {
             },
       };
 
-      // 🔹 No es necesario eliminar customerId y technicianId, ya fueron renombrados
       return transformedRepair;
     });
 
     return NextResponse.json(transformedRepairs, { status: 200 });
   } catch (error) {
     console.error("Error fetching repairs:", error);
-
-    // Verificar si `error` es una instancia de `Error`
-    let errorMessage = "Error fetching repairs";
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-
     return NextResponse.json(
-      { message: "Error fetching repairs", error: errorMessage },
+      { message: "Error fetching repairs", error: (error as Error).message },
       { status: 500 }
     );
   }
@@ -101,7 +95,7 @@ export async function POST(req: Request) {
       status = "Ingresado",
       priority,
       device,
-      customerId,
+      customer,
       receivedBy,
     } = body;
 
@@ -110,9 +104,9 @@ export async function POST(req: Request) {
     console.log("Extracted notes from device:", notes); // Verificar el valor de `notes`
     console.log("Extracted flaw from device:", flaw); // Verificar el valor de `flaw`
 
-    if (!customerId) {
+    if (!customer) {
       return NextResponse.json(
-        { message: "customerId is required" },
+        { message: "customer is required" },
         { status: 400 }
       );
     }
@@ -152,11 +146,12 @@ export async function POST(req: Request) {
       "no enciende",
     ].includes(normalizedFlaw);
 
-    // ✅ Corrección: Asegurar que `physicalCondition` sea `null` si no se envía
     const deviceData = {
       ...device,
-      physicalCondition: device?.physicalCondition?.trim() || null, // Si es una cadena vacía, se convierte a null
-      notes: notes || "", // Asignar `notes` al objeto `device`
+      brand: device.brand,
+      model: device.brand === "Sin especificar" ? "" : device.model,
+      physicalCondition: device?.physicalCondition?.trim() || null,
+      notes: notes || "",
     };
 
     console.log("Device data with notes:", deviceData); // Verificar el objeto `deviceData`
@@ -179,9 +174,9 @@ export async function POST(req: Request) {
       priority,
       device: deviceData, // Usar `deviceData` que ya incluye `notes`
       flaw: normalizedFlaw,
-      customerId,
+      customer, // Cambiado de customerId → customer
       receivedBy,
-      technicianId: null,
+      technician: null, // Cambiado de technicianId → technician
       requiresCustomerApproval,
       timeline: initialTimeline,
       totalProcessingTimeHours: 1,
@@ -193,9 +188,9 @@ export async function POST(req: Request) {
 
     console.log("Repair saved successfully:", newRepair); // Verificar la reparación guardada
 
-    // Poblar el campo `customerId` con los datos del cliente
+    // Poblar el campo `customer` con los datos del cliente
     const populatedRepair = await Repair.findById(newRepair._id).populate(
-      "customerId"
+      "customer"
     );
 
     if (!populatedRepair) {
@@ -268,9 +263,9 @@ async function generatePDF(repair: any) {
   // Información del cliente
   addText("Cliente:", 10, y, true);
   y -= lineHeight;
-  addText(`- ${repair.customerId.fullname}`, 15, y);
+  addText(`- ${repair.customer.fullname}`, 15, y);
   y -= lineHeight;
-  addText(`- ${repair.customerId.email}`, 15, y);
+  addText(`- ${repair.customer.email}`, 15, y);
   y -= lineHeight;
   addText("-----------------------------", 10, y);
   y -= lineHeight;
@@ -285,6 +280,8 @@ async function generatePDF(repair: any) {
   addText(`- Modelo: ${repair.device.model}`, 15, y);
   y -= lineHeight;
   addText(`- Desperfecto: ${repair.device.flaw}`, 15, y);
+  y -= lineHeight;
+  addText(`- Condicion: ${repair.device.physicalCondition}`, 15, y);
   y -= lineHeight;
   addText(`- Observaciones: ${repair.device.notes}`, 15, y);
   y -= lineHeight;

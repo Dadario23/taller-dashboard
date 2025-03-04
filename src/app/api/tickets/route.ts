@@ -13,8 +13,31 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Definir tipos para TypeScript
+interface Customer {
+  _id: string;
+  fullname: string;
+  email: string;
+}
+
+interface Repair {
+  repairCode: string;
+  title: string;
+  status: string;
+  priority: string;
+  device: {
+    type: string;
+    brand: string;
+    model: string;
+    flaw: string;
+    notes?: string; // Hacer notes opcional
+  };
+  customer: Customer;
+  createdAt: Date;
+}
+
 // Función para generar el PDF
-async function generatePDF(repair: any) {
+async function generatePDF(repair: Repair) {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([600, 800]);
 
@@ -46,7 +69,7 @@ async function generatePDF(repair: any) {
   y -= lineHeight;
   addText(`Desperfecto: ${repair.device.flaw}`, 50, y);
   y -= lineHeight;
-  addText(`Observaciones: ${repair.device.notes}`, 50, y);
+  addText(`Observaciones: ${repair.device.notes || "N/A"}`, 50, y);
   y -= lineHeight;
   addText(`Cliente: ${repair.customer.fullname}`, 50, y);
   y -= lineHeight;
@@ -56,7 +79,7 @@ async function generatePDF(repair: any) {
 
   // Guardar el PDF en un buffer
   const pdfBytes = await pdfDoc.save();
-  return pdfBytes;
+  return Buffer.from(pdfBytes); // Convertir Uint8Array a Buffer
 }
 
 // Función para enviar el correo electrónico
@@ -90,7 +113,9 @@ export async function POST(req: Request) {
     const { repairId, email } = await req.json();
 
     // Buscar la reparación en la base de datos
-    const repair = await Repair.findById(repairId).populate("customer");
+    const repair = await Repair.findById(repairId).populate<{
+      customer: Customer;
+    }>("customer");
     if (!repair) {
       return NextResponse.json(
         { message: "Reparación no encontrada" },
@@ -116,7 +141,10 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error generando el ticket:", error);
     return NextResponse.json(
-      { message: "Error generando el ticket", error: error.message },
+      {
+        message: "Error generando el ticket",
+        error: error instanceof Error ? error.message : "Error desconocido",
+      },
       { status: 500 }
     );
   }

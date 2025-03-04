@@ -1,3 +1,17 @@
+export type DeviceType =
+  | "Celular"
+  | "Tablet"
+  | "CPU"
+  | "Notebook"
+  | "Consola de video juego";
+export type Brand = string;
+export type Model = string;
+
+export interface DeviceData {
+  marcas: Brand[];
+  modelos: Record<Brand, Model[]>;
+}
+
 export const deviceIssues = {
   Celular: [
     "Diagnosticar por el tecnico",
@@ -45,7 +59,7 @@ export const deviceIssues = {
   ],
 };
 
-export const deviceBrandsAndModels = {
+export const deviceBrandsAndModels: Record<DeviceType, DeviceData> = {
   Celular: {
     marcas: [
       "Samsung",
@@ -280,6 +294,7 @@ export const deviceBrandsAndModels = {
 };
 
 export const physicalConditions = [
+  "Excelente",
   "Rayado",
   "Golpeado",
   "Pantalla rota",

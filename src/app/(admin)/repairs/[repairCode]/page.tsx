@@ -29,7 +29,7 @@ interface Repair {
   createdAt: string;
   updatedAt: string;
 
-  customerId: {
+  customer: {
     _id: string;
     fullname: string;
     email: string;
@@ -134,10 +134,10 @@ export default function RepairDetailPage() {
           <h2 className="font-semibold text-gray-300">
             Información del Cliente
           </h2>
-          {repair.customerId ? (
+          {repair.customer ? (
             <>
-              <p>Nombre: {repair.customerId.fullname}</p>
-              <p>Email: {repair.customerId.email}</p>
+              <p>Nombre: {repair.customer.fullname}</p>
+              <p>Email: {repair.customer.email}</p>
             </>
           ) : (
             <p className="text-gray-400">Información no disponible</p>

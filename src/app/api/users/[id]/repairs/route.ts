@@ -11,7 +11,7 @@ export async function GET(
 
     const { id } = params;
 
-    const repairs = await Repair.find({ customerId: id });
+    const repairs = await Repair.find({ customer: id });
 
     if (!repairs || repairs.length === 0) {
       return NextResponse.json(
@@ -22,10 +22,21 @@ export async function GET(
 
     return NextResponse.json(repairs, { status: 200 });
   } catch (error) {
-    console.error("Error fetching user repairs:", error);
-    return NextResponse.json(
-      { message: "Error fetching user repairs", error: error.message },
-      { status: 500 }
-    );
+    // Verifica si el error es una instancia de Error antes de acceder a la propiedad message
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { message: "Error fetching user repairs", error: error.message },
+        { status: 500 }
+      );
+    } else {
+      // Si el error no es una instancia de Error, devuelve un mensaje genérico
+      return NextResponse.json(
+        {
+          message: "Error fetching user repairs",
+          error: "An unknown error occurred",
+        },
+        { status: 500 }
+      );
+    }
   }
 }
