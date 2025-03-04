@@ -2,7 +2,6 @@ import {
   IconBarrierBlock,
   IconBrowserCheck,
   IconBug,
-  IconChecklist,
   IconError404,
   IconHelp,
   IconLayoutDashboard,

@@ -73,6 +73,10 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           "Hubo un error durante el inicio de sesión. Inténtalo de nuevo más tarde.",
         variant: "destructive",
       });
+      console.log(
+        "Hubo un error durante el inicio de sesión. Inténtalo de nuevo más tarde",
+        error
+      );
     } finally {
       setIsLoading(false);
     }
@@ -87,6 +91,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         description: `No se pudo iniciar sesión con ${provider}.`,
         variant: "destructive",
       });
+      console.log("Error al iniciar sesión", error);
     }
   };
 
