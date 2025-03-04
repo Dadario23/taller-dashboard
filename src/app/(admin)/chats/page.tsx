@@ -26,7 +26,8 @@ import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
 // Fake Data
-import { conversations } from "@/components/chats/data/convo.json";
+import data from "@/components/chats/data/convo.json";
+const conversations = data.conversations;
 
 type ChatUser = (typeof conversations)[number];
 type Convo = ChatUser["messages"][number];
@@ -38,11 +39,10 @@ export default function Chats() {
     null
   );
 
-  // Filtered data based on the search query
+  // Filtrar conversaciones basadas en la búsqueda
   const filteredChatList = conversations.filter(({ fullName }) =>
     fullName.toLowerCase().includes(search.trim().toLowerCase())
   );
-
   const currentMessage = selectedUser.messages.reduce(
     (acc: Record<string, Convo[]>, obj) => {
       const key = format(obj.timestamp, "d MMM, yyyy");
