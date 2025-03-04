@@ -1,16 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Repair from "@/models/repairs";
 import User from "@/models/user";
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   context: { params: { repairCode: string } }
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = context.params; // Corrección aquí
+    const { repairCode } = context.params; // Acceder correctamente a los parámetros
     const repair = await Repair.findOne({ repairCode }).populate(
       "customer",
       "fullname email"
@@ -34,13 +34,13 @@ export async function GET(
 }
 
 export async function PUT(
-  req: Request,
+  req: NextRequest,
   context: { params: { repairCode: string } }
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = context.params; // Corrección aquí
+    const { repairCode } = context.params; // Corrección en acceso a params
     const { status, note, changedBy } = await req.json();
 
     if (!status) {
@@ -92,89 +92,13 @@ export async function PUT(
       );
     }
 
-    const roleAtChange = user.role;
     repair.timeline.push({
       status,
       previousStatus: repair.status,
       timestamp: new Date(),
       note,
       changedBy,
-      roleAtChange,
-    });
-
-    repair.status = status;
-    await repair.save();
-
-    return NextResponse.json(
-      { message: "Repair status updated successfully", repair },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error updating repair:", error);
-    return NextResponse.json(
-      { message: "Error updating repair", error: error.message },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PATCH(
-  req: Request,
-  context: { params: { repairCode: string } }
-) {
-  try {
-    await connectDB();
-
-    const { repairCode } = context.params; // Corrección aquí
-    const { status, note, changedBy } = await req.json();
-
-    if (!status) {
-      return NextResponse.json(
-        { error: "Status is required" },
-        { status: 400 }
-      );
-    }
-
-    const validStatuses = [
-      "Pending",
-      "Under Review",
-      "In Progress",
-      "Ready for Pickup",
-      "Delivered",
-      "Cancelled",
-      "Not Repairable",
-      "Waiting for Customer Approval",
-    ];
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json(
-        {
-          error: `Invalid status. Allowed statuses are: ${validStatuses.join(", ")}`,
-        },
-        { status: 400 }
-      );
-    }
-
-    const repair = await Repair.findOne({ repairCode });
-    if (!repair) {
-      return NextResponse.json(
-        { message: "Repair not found" },
-        { status: 404 }
-      );
-    }
-
-    const user = await User.findById(changedBy);
-    if (!user || !["technician", "admin", "superadmin"].includes(user.role)) {
-      return NextResponse.json(
-        { error: "You do not have permission to update this repair" },
-        { status: 403 }
-      );
-    }
-
-    repair.timeline.push({
-      status,
-      timestamp: new Date(),
-      note,
-      changedBy,
+      roleAtChange: user.role,
     });
 
     repair.status = status;
@@ -194,13 +118,13 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   context: { params: { repairCode: string } }
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = context.params; // Corrección aquí
+    const { repairCode } = context.params;
     const repair = await Repair.findOneAndDelete({ repairCode });
 
     if (!repair) {
@@ -218,6 +142,91 @@ export async function DELETE(
     console.error("Error deleting repair:", error);
     return NextResponse.json(
       { message: "Error deleting repair", error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  req: NextRequest,
+  context: { params: { repairCode: string } }
+) {
+  try {
+    await connectDB();
+
+    const { repairCode } = context.params; // Corrección en acceso a params
+    const { status, note, changedBy } = await req.json();
+
+    // Validar que se proporcione un estado
+    if (!status) {
+      return NextResponse.json(
+        { error: "Status is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validar que el estado sea válido
+    const validStatuses = [
+      "Pending",
+      "Under Review",
+      "In Progress",
+      "Ready for Pickup",
+      "Delivered",
+      "Cancelled",
+      "Not Repairable",
+      "Waiting for Customer Approval",
+    ];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json(
+        {
+          error: `Invalid status. Allowed statuses are: ${validStatuses.join(", ")}`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Buscar la reparación por su código
+    const repair = await Repair.findOne({ repairCode });
+
+    if (!repair) {
+      return NextResponse.json(
+        { message: "Repair not found" },
+        { status: 404 }
+      );
+    }
+
+    // Validar si el usuario que realiza la actualización tiene permisos
+    const user = await User.findById(changedBy);
+    if (!user || !["technician", "admin", "superadmin"].includes(user.role)) {
+      return NextResponse.json(
+        { error: "You do not have permission to update this repair" },
+        { status: 403 }
+      );
+    }
+
+    // Actualizar el timeline con el nuevo estado
+    repair.timeline.push({
+      status,
+      timestamp: new Date(),
+      note,
+      changedBy,
+      roleAtChange: user.role, // Agregamos el rol del usuario que cambia el estado
+    });
+
+    // Actualizar el estado actual
+    repair.status = status;
+
+    // Guardar cambios
+    await repair.save();
+
+    return NextResponse.json(
+      { message: "Repair status updated successfully", repair },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error updating repair:", error);
+    return NextResponse.json(
+      { message: "Error updating repair", error: error.message },
       { status: 500 }
     );
   }
