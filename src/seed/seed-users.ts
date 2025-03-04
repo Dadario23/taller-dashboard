@@ -31,7 +31,7 @@ const seedData = async () => {
 
     console.log("🟡 Creando reparaciones...");
     let repairCounter = 1000;
-    let allRepairs = [];
+    const allRepairs = [];
 
     const deviceTypes = {
       Celular: [
@@ -91,11 +91,11 @@ const seedData = async () => {
             "Reparación Finalizada",
             "Reparación Cancelada por el Cliente",
           ];
-          let status = faker.helpers.arrayElement(
+          const status = faker.helpers.arrayElement(
             possibleStatuses.filter((s) => s !== "Reparación Finalizada")
           ); // No todas serán finalizadas
 
-          let timeline = [];
+          const timeline = [];
 
           const deviceType = faker.helpers.objectKey(
             deviceTypes
@@ -175,16 +175,16 @@ const seedData = async () => {
             });
           }
 
-          let warranty = faker.datatype.boolean();
-          let warrantyPeriod = warranty
+          const warranty = faker.datatype.boolean();
+          const warrantyPeriod = warranty
             ? faker.helpers.arrayElement([30, 60, 90])
             : 0;
-          let warrantyExpiresAt = new Date(diagnosticTimestamp);
+          const warrantyExpiresAt = new Date(diagnosticTimestamp);
           warrantyExpiresAt.setDate(
             warrantyExpiresAt.getDate() + warrantyPeriod
           );
 
-          let remainingWarrantyDays = warranty
+          const remainingWarrantyDays = warranty
             ? Math.max(
                 0,
                 Math.ceil(
@@ -194,7 +194,7 @@ const seedData = async () => {
               )
             : 0;
 
-          let customerNotifications = [
+          const customerNotifications = [
             {
               message: "Su equipo está en proceso de reparación.",
               sentAt: new Date(diagnosticTimestamp.getTime() + 10 * 60000),
@@ -202,7 +202,7 @@ const seedData = async () => {
             },
           ];
 
-          let attachments = [
+          const attachments = [
             {
               url: faker.image.url(),
               description: "Foto del equipo antes de la reparación",
@@ -210,7 +210,7 @@ const seedData = async () => {
             },
           ];
 
-          let usedParts =
+          const usedParts =
             problemDescription === "Error de software"
               ? []
               : [
