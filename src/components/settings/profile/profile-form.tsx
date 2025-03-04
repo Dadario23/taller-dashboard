@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 
 const profileFormSchema = z.object({
   fullname: z
@@ -46,8 +45,6 @@ export default function ProfileForm({
 }: {
   user: ProfileFormValues & { _id: string };
 }) {
-  const { data: session } = useSession();
-
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
