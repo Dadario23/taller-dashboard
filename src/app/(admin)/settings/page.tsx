@@ -1,4 +1,4 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import ContentSection from "@/components/settings/content-section";
 import ProfileForm from "@/components/settings/profile/profile-form";
 import { connectDB } from "@/lib/mongodb";
