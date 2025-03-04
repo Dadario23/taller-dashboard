@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/user";
 import Repair from "@/models/repairs";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { Schema, Types } from "mongoose";
+import { Schema } from "mongoose";
 interface TimelineEvent {
   status: string;
   previousStatus?: string;
@@ -11,6 +11,33 @@ interface TimelineEvent {
   note?: string;
   changedBy: Schema.Types.ObjectId;
   roleAtChange: "admin" | "superadmin" | "technician" | "user" | "reception";
+}
+
+interface RepairFilters {
+  status?: string;
+  priority?: string;
+  technician?: string;
+  customer?: string;
+  repairCode?: string;
+}
+
+interface Repair {
+  repairCode: string;
+  title: string;
+  status: string;
+  createdAt: Date;
+  customer: {
+    fullname: string;
+    email: string;
+  };
+  device: {
+    type: string;
+    brand: string;
+    model: string;
+    flaw: string;
+    physicalCondition: string;
+    notes: string;
+  };
 }
 
 export async function GET(req: Request) {
@@ -26,7 +53,7 @@ export async function GET(req: Request) {
     const repairCode = searchParams.get("repairCode");
 
     // Construir filtros dinámicos
-    const filters: any = {};
+    const filters: RepairFilters = {};
     if (status) filters.status = status;
     if (priority) filters.priority = priority;
     if (technician) filters.technician = technician; // Cambiado de technicianId → technician
@@ -189,13 +216,24 @@ export async function POST(req: Request) {
     console.log("Repair saved successfully:", newRepair); // Verificar la reparación guardada
 
     // Poblar el campo `customer` con los datos del cliente
-    const populatedRepair = await Repair.findById(newRepair._id).populate(
-      "customer"
-    );
+    const populatedRepair = await Repair.findOne({ repairCode })
+      .populate("customer", "fullname email") // Popula solo fullname y email
+      .populate("device"); // Popula si `device` también es una referencia
 
     if (!populatedRepair) {
       return NextResponse.json(
-        { message: "No se pudo poblar la reparación" },
+        { message: "Reparación no encontrada" },
+        { status: 404 }
+      );
+    }
+
+    // Verificar que `customer` está poblado correctamente
+    if (
+      !populatedRepair.customer ||
+      !("fullname" in populatedRepair.customer)
+    ) {
+      return NextResponse.json(
+        { message: "Error al obtener los datos del cliente" },
         { status: 500 }
       );
     }
@@ -219,7 +257,7 @@ export async function POST(req: Request) {
   }
 }
 
-async function generatePDF(repair: any) {
+async function generatePDF(repair: Repair) {
   // Crear un nuevo documento PDF
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([170, 300]); // Tamaño ajustado para impresoras térmicas
