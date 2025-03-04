@@ -3,14 +3,19 @@ import { connectDB } from "@/lib/mongodb";
 import Repair from "@/models/repairs";
 import User from "@/models/user";
 
-export async function GET(
-  req: NextRequest,
-  context: { params: { repairCode: string } }
-) {
+export async function GET(req: NextRequest) {
   try {
     await connectDB();
 
-    const { repairCode } = context.params; // Acceder correctamente a los parámetros
+    const repairCode = req.nextUrl.pathname.split("/").pop(); // Extraer el parámetro desde la URL
+
+    if (!repairCode) {
+      return NextResponse.json(
+        { message: "Repair code is required" },
+        { status: 400 }
+      );
+    }
+
     const repair = await Repair.findOne({ repairCode }).populate(
       "customer",
       "fullname email"
@@ -33,14 +38,18 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  req: NextRequest,
-  context: { params: { repairCode: string } }
-) {
+export async function PUT(req: NextRequest) {
   try {
     await connectDB();
 
-    const { repairCode } = context.params; // Corrección en acceso a params
+    const repairCode = req.nextUrl.pathname.split("/").pop();
+    if (!repairCode) {
+      return NextResponse.json(
+        { message: "Repair code is required" },
+        { status: 400 }
+      );
+    }
+
     const { status, note, changedBy } = await req.json();
 
     if (!status) {
@@ -117,14 +126,18 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  context: { params: { repairCode: string } }
-) {
+export async function DELETE(req: NextRequest) {
   try {
     await connectDB();
 
-    const { repairCode } = context.params;
+    const repairCode = req.nextUrl.pathname.split("/").pop();
+    if (!repairCode) {
+      return NextResponse.json(
+        { message: "Repair code is required" },
+        { status: 400 }
+      );
+    }
+
     const repair = await Repair.findOneAndDelete({ repairCode });
 
     if (!repair) {
@@ -147,17 +160,20 @@ export async function DELETE(
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  context: { params: { repairCode: string } }
-) {
+export async function PATCH(req: NextRequest) {
   try {
     await connectDB();
 
-    const { repairCode } = context.params; // Corrección en acceso a params
+    const repairCode = req.nextUrl.pathname.split("/").pop();
+    if (!repairCode) {
+      return NextResponse.json(
+        { message: "Repair code is required" },
+        { status: 400 }
+      );
+    }
+
     const { status, note, changedBy } = await req.json();
 
-    // Validar que se proporcione un estado
     if (!status) {
       return NextResponse.json(
         { error: "Status is required" },
@@ -165,7 +181,6 @@ export async function PATCH(
       );
     }
 
-    // Validar que el estado sea válido
     const validStatuses = [
       "Pending",
       "Under Review",
@@ -185,7 +200,6 @@ export async function PATCH(
       );
     }
 
-    // Buscar la reparación por su código
     const repair = await Repair.findOne({ repairCode });
 
     if (!repair) {
@@ -195,7 +209,6 @@ export async function PATCH(
       );
     }
 
-    // Validar si el usuario que realiza la actualización tiene permisos
     const user = await User.findById(changedBy);
     if (!user || !["technician", "admin", "superadmin"].includes(user.role)) {
       return NextResponse.json(
@@ -204,19 +217,15 @@ export async function PATCH(
       );
     }
 
-    // Actualizar el timeline con el nuevo estado
     repair.timeline.push({
       status,
       timestamp: new Date(),
       note,
       changedBy,
-      roleAtChange: user.role, // Agregamos el rol del usuario que cambia el estado
+      roleAtChange: user.role,
     });
 
-    // Actualizar el estado actual
     repair.status = status;
-
-    // Guardar cambios
     await repair.save();
 
     return NextResponse.json(
