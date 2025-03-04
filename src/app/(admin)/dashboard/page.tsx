@@ -186,7 +186,7 @@ export default function Dashboard() {
   );
 }
 
-const topNav = [
+/* const topNav = [
   {
     title: "Overview",
     href: "dashboard/overview",
@@ -211,4 +211,4 @@ const topNav = [
     isActive: false,
     disabled: true,
   },
-];
+]; */

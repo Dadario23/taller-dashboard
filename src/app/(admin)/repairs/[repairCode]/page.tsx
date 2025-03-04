@@ -105,6 +105,7 @@ export default function RepairDetailPage() {
         console.log("Datos de la reparación:", data);
       } catch (err) {
         setError("Error al obtener los datos de la reparación");
+        console.error("Error al obtener los datos de la reparación:", err);
       } finally {
         setLoading(false);
       }
