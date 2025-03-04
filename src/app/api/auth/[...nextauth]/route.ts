@@ -71,7 +71,7 @@ export const authOptions: AuthOptions = {
 
       if (account?.provider === "google") {
         // Busca al usuario por el `googleId` o por su correo electrónico
-        let existingUser = await User.findOne({
+        const existingUser = await User.findOne({
           $or: [{ googleId: profile?.sub }, { email: profile?.email }],
         });
 
