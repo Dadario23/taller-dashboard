@@ -3,6 +3,16 @@ import { connectDB } from "@/lib/mongodb";
 import Repair from "@/models/repairs";
 import User from "@/models/user";
 
+// Función simulada para enviar notificaciones
+const sendNotification = async (userId: string, message: string) => {
+  const user = await User.findById(userId);
+  if (user && user.email) {
+    console.log(`Enviando notificación a ${user.email}: ${message}`);
+    // Aquí podrías integrar un servicio de correo electrónico o mensajería
+  }
+};
+
+// GET: Obtener una reparación por su código
 export async function GET(
   req: Request,
   { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
@@ -33,15 +43,7 @@ export async function GET(
   }
 }
 
-// Función simulada para enviar notificaciones
-const sendNotification = async (userId: string, message: string) => {
-  const user = await User.findById(userId);
-  if (user && user.email) {
-    console.log(`Enviando notificación a ${user.email}: ${message}`);
-    // Aquí podrías integrar un servicio de correo electrónico o mensajería
-  }
-};
-
+// PUT: Actualizar el estado de una reparación
 export async function PUT(
   req: Request,
   { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
@@ -151,6 +153,7 @@ export async function PUT(
   }
 }
 
+// PATCH: Actualizar parcialmente una reparación
 export async function PATCH(
   req: Request,
   { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
@@ -235,6 +238,7 @@ export async function PATCH(
   }
 }
 
+// DELETE: Eliminar una reparación
 export async function DELETE(
   req: Request,
   { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
