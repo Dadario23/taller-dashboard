@@ -141,12 +141,14 @@ export async function PUT(
 
     // Enviar notificaciones
     await sendNotification(
-      repair.customer,
+      repair.customer.toString(), // Convertir ObjectId a string
       `El estado de tu reparación (${repair.repairCode}) ha cambiado a "${status}".`
     );
-    if (repair.technicianId) {
+
+    if (repair.technician) {
+      // Usar la propiedad correcta (technician en lugar de technicianId)
       await sendNotification(
-        repair.technicianId,
+        repair.technician.toString(), // Convertir ObjectId a string
         `El estado de la reparación (${repair.repairCode}) ha cambiado a "${status}".`
       );
     }
@@ -233,12 +235,16 @@ export async function PATCH(
       );
     }
 
+    // Obtener el rol del usuario que realiza el cambio
+    const roleAtChange = user.role; // Asumiendo que `user` es el objeto del usuario que realiza la actualización
+
     // Actualizar el timeline con el nuevo estado
     repair.timeline.push({
       status,
       timestamp: new Date(),
       note,
       changedBy,
+      roleAtChange, // Incluir la propiedad requerida
     });
 
     // Actualizar el estado actual
