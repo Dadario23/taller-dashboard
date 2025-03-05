@@ -21,7 +21,6 @@ export async function GET(
     await connectDB();
 
     const { repairCode } = params;
-
     const repair = await Repair.findOne({ repairCode }).populate(
       "customer",
       "fullname email"
@@ -58,12 +57,12 @@ export async function GET(
 // PUT: Actualizar el estado de una reparación
 export async function PUT(
   req: Request,
-  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
+  { params }: { params: { repairCode: string } }
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params; // Usamos directamente params.repairCode
+    const { repairCode } = params;
     const { status, note, changedBy } = await req.json(); // Obtén los datos del body
 
     // Validar que se proporcione un estado
@@ -157,23 +156,34 @@ export async function PUT(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error updating repair:", error);
-    return NextResponse.json(
-      { message: "Error updating repair", error: error.message },
-      { status: 500 }
-    );
+    // Verifica si el error es una instancia de Error antes de acceder a la propiedad message
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { message: "Error updating repair", error: error.message },
+        { status: 500 }
+      );
+    } else {
+      // Si el error no es una instancia de Error, devuelve un mensaje genérico
+      return NextResponse.json(
+        {
+          message: "Error updating repair",
+          error: "An unknown error occurred",
+        },
+        { status: 500 }
+      );
+    }
   }
 }
 
 // PATCH: Actualizar parcialmente una reparación
 export async function PATCH(
   req: Request,
-  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
+  { params }: { params: { repairCode: string } }
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params; // Usamos directamente params.repairCode
+    const { repairCode } = params;
     const { status, note, changedBy } = await req.json();
 
     // Validar que se proporcione un estado
@@ -242,23 +252,34 @@ export async function PATCH(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error updating repair:", error);
-    return NextResponse.json(
-      { message: "Error updating repair", error: error.message },
-      { status: 500 }
-    );
+    // Verifica si el error es una instancia de Error antes de acceder a la propiedad message
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { message: "Error updating repair", error: error.message },
+        { status: 500 }
+      );
+    } else {
+      // Si el error no es una instancia de Error, devuelve un mensaje genérico
+      return NextResponse.json(
+        {
+          message: "Error updating repair",
+          error: "An unknown error occurred",
+        },
+        { status: 500 }
+      );
+    }
   }
 }
 
 // DELETE: Eliminar una reparación
 export async function DELETE(
   req: Request,
-  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
+  { params }: { params: { repairCode: string } }
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params; // Usamos directamente params.repairCode
+    const { repairCode } = params;
 
     const repair = await Repair.findOneAndDelete({ repairCode });
 
@@ -274,10 +295,21 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error deleting repair:", error);
-    return NextResponse.json(
-      { message: "Error deleting repair", error: error.message },
-      { status: 500 }
-    );
+    // Verifica si el error es una instancia de Error antes de acceder a la propiedad message
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { message: "Error deleting repair", error: error.message },
+        { status: 500 }
+      );
+    } else {
+      // Si el error no es una instancia de Error, devuelve un mensaje genérico
+      return NextResponse.json(
+        {
+          message: "Error deleting repair",
+          error: "An unknown error occurred",
+        },
+        { status: 500 }
+      );
+    }
   }
 }
