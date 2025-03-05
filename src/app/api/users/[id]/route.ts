@@ -4,13 +4,15 @@ import { connectDB } from "@/lib/mongodb";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const userId = params.id;
-    const user = await User.findById(userId).select("-password"); // Excluir la contraseña
+    // Resuelve la promesa para obtener los parámetros
+    const { id } = await params;
+
+    const user = await User.findById(id).select("-password"); // Excluir la contraseña
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
@@ -35,18 +37,21 @@ export async function GET(
     }
   }
 }
+
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const userId = params.id;
+    // Resuelve la promesa para obtener los parámetros
+    const { id } = await params;
+
     const body = await req.json();
 
     const updatedUser = await User.findByIdAndUpdate(
-      userId,
+      id,
       {
         fullname: body.fullname,
         whatsapp: body.whatsapp,
