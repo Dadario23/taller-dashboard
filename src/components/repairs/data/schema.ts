@@ -35,5 +35,6 @@ export type RepairType = {
     model: string;
     serialNumber?: string;
   };
+  label?: string;
   // Agrega otras propiedades según sea necesario
 };

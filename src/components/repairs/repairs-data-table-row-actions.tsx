@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRepairs } from "@/context/repairs-context";
-import { Repair } from "@/components/repairs/data/schema";
+import { RepairType } from "@/components/repairs/data/schema";
 import { labels } from "./data/data";
 
 interface DataTableRowActionsProps<TData> {
@@ -26,7 +26,7 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const repair = row.original as Repair;
+  const repair = row.original as RepairType;
 
   const { setOpen, setCurrentRow } = useRepairs();
 
