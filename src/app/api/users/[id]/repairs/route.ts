@@ -4,13 +4,12 @@ import Repair from "@/models/repairs";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // Ajustado para coincidir con el tipo esperado
 ) {
   try {
     await connectDB();
 
-    const { id } = params;
-
+    const { id } = await params; // Usamos await para obtener los valores de params
     const repairs = await Repair.find({ customer: id });
 
     if (!repairs || repairs.length === 0) {
