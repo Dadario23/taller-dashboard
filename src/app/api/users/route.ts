@@ -13,9 +13,19 @@ export async function GET() {
     return NextResponse.json(users, { status: 200 });
   } catch (error) {
     console.error("Error fetching users:", error);
-    return NextResponse.json(
-      { message: "Error fetching users", error: error.message },
-      { status: 500 }
-    );
+
+    // Verificar si `error` es una instancia de `Error`
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { message: "Error fetching users", error: error.message },
+        { status: 500 }
+      );
+    } else {
+      // Si `error` no es una instancia de `Error`, devolver un mensaje genérico
+      return NextResponse.json(
+        { message: "Error fetching users", error: "An unknown error occurred" },
+        { status: 500 }
+      );
+    }
   }
 }
