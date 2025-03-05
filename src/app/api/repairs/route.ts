@@ -40,6 +40,47 @@ interface Repair {
   };
 }
 
+// Definir un tipo para Technician
+interface Technician {
+  _id: string;
+  fullname: string;
+}
+
+// Definir un tipo para Customer
+interface Customer {
+  _id: string;
+  fullname: string;
+  email: string;
+}
+
+// Definir un tipo para Device
+interface Device {
+  type: string;
+  brand: string;
+  model: string;
+  flaw: string;
+  physicalCondition: string;
+  notes: string;
+}
+
+// Definir un tipo para PopulatedRepair
+interface PopulatedRepair {
+  repairCode: string;
+  title: string;
+  status: string;
+  priority: string;
+  device: Device;
+  flaw: string;
+  customer: Customer;
+  receivedBy: string;
+  technician: string | null;
+  requiresCustomerApproval: boolean;
+  timeline: TimelineEvent[];
+  totalProcessingTimeHours: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export async function GET(req: Request) {
   try {
     await connectDB(); // Conectar a la DB
@@ -68,6 +109,9 @@ export async function GET(req: Request) {
       .lean();
 
     const transformedRepairs = repairs.map((repair) => {
+      // Verificar que `technician` esté correctamente poblado
+      const technician = repair.technician as unknown as Technician;
+
       const transformedRepair = {
         ...repair,
         createdAt: new Date(repair.createdAt).toISOString(),
@@ -77,10 +121,10 @@ export async function GET(req: Request) {
           timestamp: new Date(t.timestamp).toISOString(),
         })),
         customer: repair.customer, // Ya no es necesario renombrar
-        technician: repair.technician
+        technician: technician
           ? {
-              _id: repair.technician._id,
-              fullname: repair.technician.fullname,
+              _id: technician._id.toString(), // Convertir ObjectId a string
+              fullname: technician.fullname,
               waitingTimeHours: null, // No se aplica si el técnico está asignado
             }
           : {
@@ -216,9 +260,10 @@ export async function POST(req: Request) {
     console.log("Repair saved successfully:", newRepair); // Verificar la reparación guardada
 
     // Poblar el campo `customer` con los datos del cliente
-    const populatedRepair = await Repair.findOne({ repairCode })
+    const populatedRepair = (await Repair.findOne({ repairCode })
       .populate("customer", "fullname email") // Popula solo fullname y email
-      .populate("device"); // Popula si `device` también es una referencia
+      .populate("device") // Popula si `device` también es una referencia
+      .exec()) as unknown as PopulatedRepair;
 
     if (!populatedRepair) {
       return NextResponse.json(
