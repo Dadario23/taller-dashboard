@@ -83,7 +83,7 @@ export const repairsColumns: ColumnDef<RepairType>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const status = row.getValue("status");
+      const status = row.getValue("status") as string; // Aserción de tipo
       return <Badge variant="outline">{status}</Badge>;
     },
     filterFn: (row, id, value) => {
@@ -96,7 +96,7 @@ export const repairsColumns: ColumnDef<RepairType>[] = [
       <DataTableColumnHeader column={column} title="Priority" />
     ),
     cell: ({ row }) => {
-      const priority = row.getValue("priority");
+      const priority = row.getValue("priority") as string; // Aserción de tipo
       return (
         <Badge variant={priority === "High" ? "destructive" : "outline"}>
           {priority}

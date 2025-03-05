@@ -22,3 +22,18 @@ export const formSchema = z
   });
 
 export type RepairsForm = z.infer<typeof formSchema>;
+
+// Definir y exportar el tipo RepairType
+export type RepairType = {
+  repairCode: string;
+  title: string;
+  status: string;
+  priority: string;
+  device: {
+    type: string;
+    brand: string;
+    model: string;
+    serialNumber?: string;
+  };
+  // Agrega otras propiedades según sea necesario
+};
