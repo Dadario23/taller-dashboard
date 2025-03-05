@@ -15,12 +15,13 @@ const sendNotification = async (userId: string, message: string) => {
 // GET: Obtener una reparación por su código
 export async function GET(
   req: Request,
-  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
+  { params }: { params: { repairCode: string } }
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params; // Usamos directamente params.repairCode
+    const { repairCode } = params;
+
     const repair = await Repair.findOne({ repairCode }).populate(
       "customer",
       "fullname email"
@@ -35,11 +36,22 @@ export async function GET(
 
     return NextResponse.json(repair, { status: 200 });
   } catch (error) {
-    console.error("Error fetching repair:", error);
-    return NextResponse.json(
-      { message: "Error fetching repair", error: error.message },
-      { status: 500 }
-    );
+    // Verifica si el error es una instancia de Error antes de acceder a la propiedad message
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { message: "Error fetching repair", error: error.message },
+        { status: 500 }
+      );
+    } else {
+      // Si el error no es una instancia de Error, devuelve un mensaje genérico
+      return NextResponse.json(
+        {
+          message: "Error fetching repair",
+          error: "An unknown error occurred",
+        },
+        { status: 500 }
+      );
+    }
   }
 }
 
