@@ -15,12 +15,12 @@ const sendNotification = async (userId: string, message: string) => {
 // GET: Obtener una reparación por su código
 export async function GET(
   req: Request,
-  { params }: { params: { repairCode: string } }
+  { params }: { params: Promise<{ repairCode: string }> } // Ajustado para coincidir con el tipo esperado
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params;
+    const { repairCode } = await params; // Usamos await para obtener los valores de params
     const repair = await Repair.findOne({ repairCode }).populate(
       "customer",
       "fullname email"
@@ -57,12 +57,12 @@ export async function GET(
 // PUT: Actualizar el estado de una reparación
 export async function PUT(
   req: Request,
-  { params }: { params: { repairCode: string } }
+  { params }: { params: Promise<{ repairCode: string }> } // Ajustado para coincidir con el tipo esperado
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params;
+    const { repairCode } = await params; // Usamos await para obtener los valores de params
     const { status, note, changedBy } = await req.json(); // Obtén los datos del body
 
     // Validar que se proporcione un estado
@@ -144,7 +144,6 @@ export async function PUT(
       repair.customer.toString(), // Convertir ObjectId a string
       `El estado de tu reparación (${repair.repairCode}) ha cambiado a "${status}".`
     );
-
     if (repair.technician) {
       // Usar la propiedad correcta (technician en lugar de technicianId)
       await sendNotification(
@@ -180,12 +179,12 @@ export async function PUT(
 // PATCH: Actualizar parcialmente una reparación
 export async function PATCH(
   req: Request,
-  { params }: { params: { repairCode: string } }
+  { params }: { params: Promise<{ repairCode: string }> } // Ajustado para coincidir con el tipo esperado
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params;
+    const { repairCode } = await params; // Usamos await para obtener los valores de params
     const { status, note, changedBy } = await req.json();
 
     // Validar que se proporcione un estado
@@ -280,12 +279,12 @@ export async function PATCH(
 // DELETE: Eliminar una reparación
 export async function DELETE(
   req: Request,
-  { params }: { params: { repairCode: string } }
+  { params }: { params: Promise<{ repairCode: string }> } // Ajustado para coincidir con el tipo esperado
 ) {
   try {
     await connectDB();
 
-    const { repairCode } = params;
+    const { repairCode } = await params; // Usamos await para obtener los valores de params
 
     const repair = await Repair.findOneAndDelete({ repairCode });
 
