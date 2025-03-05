@@ -1,21 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Repair from "@/models/repairs";
 import User from "@/models/user";
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: Request,
+  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
+) {
   try {
     await connectDB();
 
-    const repairCode = req.nextUrl.pathname.split("/").pop(); // Extraer el parámetro desde la URL
-
-    if (!repairCode) {
-      return NextResponse.json(
-        { message: "Repair code is required" },
-        { status: 400 }
-      );
-    }
-
+    const { repairCode } = params; // Usamos directamente params.repairCode
     const repair = await Repair.findOne({ repairCode }).populate(
       "customer",
       "fullname email"
@@ -38,20 +33,26 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function PUT(req: NextRequest) {
+// Función simulada para enviar notificaciones
+const sendNotification = async (userId: string, message: string) => {
+  const user = await User.findById(userId);
+  if (user && user.email) {
+    console.log(`Enviando notificación a ${user.email}: ${message}`);
+    // Aquí podrías integrar un servicio de correo electrónico o mensajería
+  }
+};
+
+export async function PUT(
+  req: Request,
+  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
+) {
   try {
     await connectDB();
 
-    const repairCode = req.nextUrl.pathname.split("/").pop();
-    if (!repairCode) {
-      return NextResponse.json(
-        { message: "Repair code is required" },
-        { status: 400 }
-      );
-    }
+    const { repairCode } = params; // Usamos directamente params.repairCode
+    const { status, note, changedBy } = await req.json(); // Obtén los datos del body
 
-    const { status, note, changedBy } = await req.json();
-
+    // Validar que se proporcione un estado
     if (!status) {
       return NextResponse.json(
         { error: "Status is required" },
@@ -59,6 +60,7 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // Validar que el estado sea válido
     const validStatuses = [
       "Pending",
       "Under Review",
@@ -78,7 +80,9 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // Buscar la reparación por su repairCode
     const repair = await Repair.findOne({ repairCode });
+
     if (!repair) {
       return NextResponse.json(
         { message: "Repair not found" },
@@ -86,6 +90,7 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // Validar si el usuario que realiza la actualización tiene permisos
     const user = await User.findById(changedBy);
     if (!user || !["technician", "admin", "superadmin"].includes(user.role)) {
       return NextResponse.json(
@@ -94,6 +99,7 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // Validar que solo los técnicos puedan cambiar el estado a "In Progress"
     if (status === "In Progress" && user.role !== "technician") {
       return NextResponse.json(
         { error: "Only technicians can set the status to 'In Progress'." },
@@ -101,16 +107,119 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    // Obtener el rol del usuario que realiza el cambio
+    const roleAtChange = user.role;
+
+    // Actualizar el timeline con el nuevo estado
     repair.timeline.push({
       status,
-      previousStatus: repair.status,
+      previousStatus: repair.status, // Guarda el estado anterior
       timestamp: new Date(),
       note,
       changedBy,
-      roleAtChange: user.role,
+      roleAtChange, // Asegúrate de incluir el rol del usuario
     });
 
+    // Actualizar el estado actual
     repair.status = status;
+
+    // Guardar cambios
+    await repair.save();
+
+    // Enviar notificaciones
+    await sendNotification(
+      repair.customer,
+      `El estado de tu reparación (${repair.repairCode}) ha cambiado a "${status}".`
+    );
+    if (repair.technicianId) {
+      await sendNotification(
+        repair.technicianId,
+        `El estado de la reparación (${repair.repairCode}) ha cambiado a "${status}".`
+      );
+    }
+
+    return NextResponse.json(
+      { message: "Repair status updated successfully", repair },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error updating repair:", error);
+    return NextResponse.json(
+      { message: "Error updating repair", error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  req: Request,
+  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
+) {
+  try {
+    await connectDB();
+
+    const { repairCode } = params; // Usamos directamente params.repairCode
+    const { status, note, changedBy } = await req.json();
+
+    // Validar que se proporcione un estado
+    if (!status) {
+      return NextResponse.json(
+        { error: "Status is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validar que el estado sea válido
+    const validStatuses = [
+      "Pending",
+      "Under Review",
+      "In Progress",
+      "Ready for Pickup",
+      "Delivered",
+      "Cancelled",
+      "Not Repairable",
+      "Waiting for Customer Approval",
+    ];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json(
+        {
+          error: `Invalid status. Allowed statuses are: ${validStatuses.join(", ")}`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Buscar la reparación por su código
+    const repair = await Repair.findOne({ repairCode });
+
+    if (!repair) {
+      return NextResponse.json(
+        { message: "Repair not found" },
+        { status: 404 }
+      );
+    }
+
+    // Validar si el usuario que realiza la actualización tiene permisos
+    const user = await User.findById(changedBy);
+    if (!user || !["technician", "admin", "superadmin"].includes(user.role)) {
+      return NextResponse.json(
+        { error: "You do not have permission to update this repair" },
+        { status: 403 }
+      );
+    }
+
+    // Actualizar el timeline con el nuevo estado
+    repair.timeline.push({
+      status,
+      timestamp: new Date(),
+      note,
+      changedBy,
+    });
+
+    // Actualizar el estado actual
+    repair.status = status;
+
+    // Guardar cambios
     await repair.save();
 
     return NextResponse.json(
@@ -126,17 +235,14 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(
+  req: Request,
+  { params }: { params: { repairCode: string } } // Ajustado para coincidir con el tipo esperado
+) {
   try {
     await connectDB();
 
-    const repairCode = req.nextUrl.pathname.split("/").pop();
-    if (!repairCode) {
-      return NextResponse.json(
-        { message: "Repair code is required" },
-        { status: 400 }
-      );
-    }
+    const { repairCode } = params; // Usamos directamente params.repairCode
 
     const repair = await Repair.findOneAndDelete({ repairCode });
 
@@ -155,87 +261,6 @@ export async function DELETE(req: NextRequest) {
     console.error("Error deleting repair:", error);
     return NextResponse.json(
       { message: "Error deleting repair", error: error.message },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PATCH(req: NextRequest) {
-  try {
-    await connectDB();
-
-    const repairCode = req.nextUrl.pathname.split("/").pop();
-    if (!repairCode) {
-      return NextResponse.json(
-        { message: "Repair code is required" },
-        { status: 400 }
-      );
-    }
-
-    const { status, note, changedBy } = await req.json();
-
-    if (!status) {
-      return NextResponse.json(
-        { error: "Status is required" },
-        { status: 400 }
-      );
-    }
-
-    const validStatuses = [
-      "Pending",
-      "Under Review",
-      "In Progress",
-      "Ready for Pickup",
-      "Delivered",
-      "Cancelled",
-      "Not Repairable",
-      "Waiting for Customer Approval",
-    ];
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json(
-        {
-          error: `Invalid status. Allowed statuses are: ${validStatuses.join(", ")}`,
-        },
-        { status: 400 }
-      );
-    }
-
-    const repair = await Repair.findOne({ repairCode });
-
-    if (!repair) {
-      return NextResponse.json(
-        { message: "Repair not found" },
-        { status: 404 }
-      );
-    }
-
-    const user = await User.findById(changedBy);
-    if (!user || !["technician", "admin", "superadmin"].includes(user.role)) {
-      return NextResponse.json(
-        { error: "You do not have permission to update this repair" },
-        { status: 403 }
-      );
-    }
-
-    repair.timeline.push({
-      status,
-      timestamp: new Date(),
-      note,
-      changedBy,
-      roleAtChange: user.role,
-    });
-
-    repair.status = status;
-    await repair.save();
-
-    return NextResponse.json(
-      { message: "Repair status updated successfully", repair },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error updating repair:", error);
-    return NextResponse.json(
-      { message: "Error updating repair", error: error.message },
       { status: 500 }
     );
   }
