@@ -13,7 +13,7 @@ export interface RepairData {
   priority: string;
 }
 
-const API_URL = process.env.NEXTAUTH_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 /**
  * Obtiene el ID del usuario autenticado a partir del email.
  */
@@ -34,7 +34,7 @@ export const getUserIdByEmail = async (email: string) => {
  */
 export const getCustomers = async () => {
   try {
-    const res = await fetch(`/${API_URL}/api/users`);
+    const res = await fetch(`${API_URL}/api/users`);
     if (!res.ok) throw new Error("Error al obtener clientes");
     const data = await res.json();
     return data.sort((a: { fullname: string }, b: { fullname: string }) =>
