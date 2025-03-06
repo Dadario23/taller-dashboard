@@ -13,7 +13,7 @@ export interface RepairData {
   priority: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXTAUTH_URL;
 /**
  * Obtiene el ID del usuario autenticado a partir del email.
  */
@@ -51,7 +51,7 @@ export const getCustomers = async () => {
  */
 export const createRepair = async (repairData: RepairData) => {
   try {
-    const response = await fetch("http://localhost:3000/api/repairs", {
+    const response = await fetch(`${API_URL}/api/repairs`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
