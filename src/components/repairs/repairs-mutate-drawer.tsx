@@ -11,7 +11,7 @@ interface RepairRow {
   model: string;
   physicalCondition: string;
   notes: string;
-  id?: number; // Opcional
+  id?: string; // Cambiar a string | undefined
   status?: string; // Opcional
 }
 

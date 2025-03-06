@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const formSchema = z
   .object({
+    id: z.string().optional(), // Agregar id como campo opcional
     device: z.string().min(1, "El dispositivo es requerido."),
     customer: z.string().min(1, "Customer is required."),
     flaw: z.string().min(1, "Issue is required."),
