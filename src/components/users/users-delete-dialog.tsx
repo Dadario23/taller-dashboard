@@ -19,7 +19,7 @@ export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
   const [value, setValue] = useState("");
 
   const handleDelete = () => {
-    if (value.trim() !== currentRow.username) return;
+    if (value.trim() !== currentRow.fullname) return;
 
     onOpenChange(false);
     toast({
@@ -39,7 +39,7 @@ export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
       open={open}
       onOpenChange={onOpenChange}
       handleConfirm={handleDelete}
-      disabled={value.trim() !== currentRow.username}
+      disabled={value.trim() !== currentRow.fullname}
       title={
         <span className="text-destructive">
           <IconAlertTriangle
@@ -53,7 +53,7 @@ export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
         <div className="space-y-4">
           <p className="mb-2">
             Are you sure you want to delete{" "}
-            <span className="font-bold">{currentRow.username}</span>?
+            <span className="font-bold">{currentRow.fullname}</span>?
             <br />
             This action will permanently remove the user with the role of{" "}
             <span className="font-bold">
@@ -63,11 +63,11 @@ export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
           </p>
 
           <Label className="my-2">
-            Username:
+            fullname:
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder="Enter username to confirm deletion."
+              placeholder="Enter fullname to confirm deletion."
             />
           </Label>
 
