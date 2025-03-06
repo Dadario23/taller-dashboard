@@ -12,27 +12,39 @@ export async function middleware(req: NextRequest) {
   try {
     // Obtener el token JWT del usuario
     const token = await getToken({ req });
-
-    // Si no hay token (usuario no autenticado), redirigir al sign-in
-    if (!token) {
-      return NextResponse.redirect(new URL(AUTH_ROUTES.signIn, req.url));
-    }
+    console.log("Token en middleware:", token);
 
     // Obtener el pathname actual (ruta solicitada)
     const currentPath = req.nextUrl.pathname;
+    console.log("Ruta solicitada:", currentPath);
+
+    // Si no hay token (usuario no autenticado) y no está en la página de sign-in, redirigir al sign-in
+    if (!token && currentPath !== AUTH_ROUTES.signIn) {
+      console.log("Usuario no autenticado, redirigiendo a sign-in");
+      return NextResponse.redirect(new URL(AUTH_ROUTES.signIn, req.url));
+    }
+
+    // Si el usuario está autenticado y está en la página de sign-in, redirigir al dashboard
+    if (token && currentPath === AUTH_ROUTES.signIn) {
+      console.log("Usuario autenticado, redirigiendo a dashboard");
+      return NextResponse.redirect(new URL(AUTH_ROUTES.dashboard, req.url));
+    }
 
     // Obtener el rol del usuario desde el token
-    const userRole = token.role;
+    const userRole = token?.role;
+    console.log("Rol del usuario:", userRole);
 
     // Redirigir según el rol del usuario y la ruta solicitada
     if (
       currentPath.startsWith(AUTH_ROUTES.dashboard) &&
       userRole === "client"
     ) {
+      console.log("Usuario no autorizado para dashboard, redirigiendo a home");
       return NextResponse.redirect(new URL(AUTH_ROUTES.home, req.url));
     }
 
     if (currentPath.startsWith(AUTH_ROUTES.home) && userRole !== "client") {
+      console.log("Usuario no autorizado para home, redirigiendo a dashboard");
       return NextResponse.redirect(new URL(AUTH_ROUTES.dashboard, req.url));
     }
 
