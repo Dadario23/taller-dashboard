@@ -19,7 +19,7 @@ const seedData = async () => {
       Array.from({ length: 20 }, () => ({
         fullname: faker.person.fullName(),
         email: faker.internet.email(),
-        whatsapp: faker.phone.number("+54 11 ### ####"),
+        whatsapp: faker.helpers.fromRegExp(/\+54 11 \d{4} \d{4}/), // Genera un número de teléfono con formato +54 11 #### ####
         role: faker.helpers.arrayElement([
           "superadmin",
           "admin",
@@ -162,7 +162,7 @@ const seedData = async () => {
             status === "Esperando Repuesto" ||
             status === "Reparación en Progreso"
           ) {
-            totalCost = parseFloat(faker.finance.amount(50, 500, 2));
+            totalCost = parseFloat(faker.finance.amount()); // Genera un monto aleatorio
             timeline.push({
               status,
               timestamp: faker.date.soon({
