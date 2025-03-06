@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"; // Deshabilita el prerenderizado
 import { authOptions } from "@/lib/authOptions";
 import ContentSection from "@/components/settings/content-section";
 import ProfileForm from "@/components/settings/profile/profile-form";
