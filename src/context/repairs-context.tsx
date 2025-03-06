@@ -1,15 +1,15 @@
 "use client";
 import React, { useState } from "react";
 import useDialogState from "@/hooks/use-dialog-state";
-import { Repair } from "@/components/repairs/data/schema";
+import { RepairsForm } from "@/components/repairs/data/schema";
 
 type RepairsDialogType = "create" | "update" | "delete" | "import";
 
 interface RepairsContextType {
   open: RepairsDialogType | null;
   setOpen: (str: RepairsDialogType | null) => void;
-  currentRow: Repair | null;
-  setCurrentRow: React.Dispatch<React.SetStateAction<Repair | null>>;
+  currentRow: RepairsForm | null;
+  setCurrentRow: React.Dispatch<React.SetStateAction<RepairsForm | null>>;
 }
 
 const RepairsContext = React.createContext<RepairsContextType | null>(null);
@@ -20,7 +20,7 @@ interface Props {
 
 export default function RepairsProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<RepairsDialogType>(null);
-  const [currentRow, setCurrentRow] = useState<Repair | null>(null);
+  const [currentRow, setCurrentRow] = useState<RepairsForm | null>(null);
 
   return (
     <RepairsContext.Provider
