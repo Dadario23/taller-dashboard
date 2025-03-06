@@ -6,18 +6,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRepairs } from "@/context/repairs-context";
-import { RepairType } from "@/components/repairs/data/schema";
-import { labels } from "./data/data";
+import { RepairsForm } from "@/components/repairs/data/schema";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -26,7 +20,7 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const repair = row.original as RepairType;
+  const repair = row.original as RepairsForm;
 
   const { setOpen, setCurrentRow } = useRepairs();
 
@@ -52,19 +46,6 @@ export function DataTableRowActions<TData>({
         </DropdownMenuItem>
         <DropdownMenuItem disabled>Make a copy</DropdownMenuItem>
         <DropdownMenuItem disabled>Favorite</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            <DropdownMenuRadioGroup value={repair.label}>
-              {labels.map((label) => (
-                <DropdownMenuRadioItem key={label.value} value={label.value}>
-                  {label.label}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
