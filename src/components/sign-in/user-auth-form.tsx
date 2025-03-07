@@ -26,12 +26,12 @@ type UserAuthFormProps = HTMLAttributes<HTMLDivElement>;
 const formSchema = z.object({
   email: z
     .string()
-    .min(1, { message: "Por favor ingrese su email" })
-    .email({ message: "Dirección de correo no válida" }),
+    .min(1, { message: "Por favor ingresa tu correo electrónico." })
+    .email({ message: "Correo electrónico no válido." }),
   password: z
     .string()
-    .min(1, { message: "Por favor ingrese su contraseña" })
-    .min(7, { message: "La contraseña debe tener al menos 7 caracteres" }),
+    .min(1, { message: "Por favor ingresa tu contraseña." })
+    .min(7, { message: "La contraseña debe tener al menos 7 caracteres." }),
 });
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
@@ -59,7 +59,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
       if (res?.error) {
         toast({
-          title: "Error de inicio de sesión",
+          title: "Error al iniciar sesión",
           description: res.error,
           variant: "destructive",
         });
@@ -106,9 +106,9 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               name="email"
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Correo electrónico</FormLabel>
                   <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
+                    <Input placeholder="nombre@ejemplo.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -122,7 +122,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               render={({ field }) => (
                 <FormItem className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Contraseña</FormLabel>
                     <Link
                       href="/forgot-password"
                       className="text-sm font-medium text-muted-foreground hover:opacity-75"
@@ -142,6 +142,17 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
               {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
             </Button>
+
+            {/* Enlace para crear una cuenta */}
+            <div className="text-center text-sm text-muted-foreground">
+              ¿No tienes una cuenta?{" "}
+              <Link
+                href="/sign-up"
+                className="font-medium text-primary hover:underline"
+              >
+                Crear cuenta
+              </Link>
+            </div>
 
             {/* Separador */}
             <div className="relative my-4">
