@@ -14,7 +14,7 @@ export default function SignIn() {
       </div>
       <UserAuthForm />
       <p className="mt-4 px-8 text-center text-sm text-muted-foreground">
-        Al hacer clic en "Iniciar sesión", aceptas nuestros{" "}
+        Al hacer clic en Iniciar sesión, aceptas nuestros{" "}
         <a
           href="/terms"
           className="underline underline-offset-4 hover:text-primary"
