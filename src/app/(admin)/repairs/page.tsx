@@ -37,9 +37,9 @@ export default function Repairs() {
       <Main>
         <div className="mb-2 flex items-center justify-between space-y-2 flex-wrap gap-x-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Repairs</h2>
+            <h2 className="text-2xl font-bold tracking-tight">Reparaciones</h2>
             <p className="text-muted-foreground">
-              Here&apos;s a list of your repairs for this month!
+              Aqui tienes una lista con las reparaciones.
             </p>
           </div>
           <TasksPrimaryButtons />

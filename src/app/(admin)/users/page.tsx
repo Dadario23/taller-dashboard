@@ -49,9 +49,11 @@ export default function Users() {
       <Main>
         <div className="mb-2 flex items-center justify-between space-y-2 flex-wrap">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">User List</h2>
+            <h2 className="text-2xl font-bold tracking-tight">
+              Lista de Usuarios
+            </h2>
             <p className="text-muted-foreground">
-              Manage your users and their roles here.
+              Gestione aqui sus usuarios y sus funciones.
             </p>
           </div>
           <UsersPrimaryButtons />
