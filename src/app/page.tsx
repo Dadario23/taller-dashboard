@@ -10,7 +10,7 @@ export default function Home() {
         <nav className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold">
             <Zap className="h-5 w-5" />
-            <span>Electronics Repair Shop</span>
+            <span>Compumobile</span>
           </Link>
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="hover:text-gray-300">
@@ -31,7 +31,7 @@ export default function Home() {
       {/* Main Content */}
       <main className="container mx-auto px-4 mt-24 flex flex-col md:flex-row items-center">
         <div className="md:w-1/2">
-          <h1 className="text-6xl font-bold mb-4">Electronics Repair Shop</h1>
+          <h1 className="text-6xl font-bold mb-4">Tech Repair Store</h1>
           <p className="text-gray-400 mb-8">
             Conectamos tu tecnología, simplificamos tu vida.
           </p>

@@ -177,15 +177,6 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               >
                 Google
               </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                type="button"
-                onClick={() => handleProviderSignIn("github")}
-                disabled={isLoading}
-              >
-                GitHub
-              </Button>
             </div>
           </div>
         </form>
