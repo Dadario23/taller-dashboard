@@ -19,7 +19,7 @@ import {
   IconUsers,
 } from "@tabler/icons-react";
 
-import { AudioWaveform, Command, GalleryVerticalEnd, Zap } from "lucide-react";
+import { AudioWaveform, GalleryVerticalEnd, Zap } from "lucide-react";
 import { type SidebarData } from "@/components/types";
 import { Wrench } from "lucide-react";
 
