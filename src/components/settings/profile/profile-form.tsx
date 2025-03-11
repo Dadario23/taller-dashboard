@@ -135,7 +135,7 @@ export default function ProfileForm({
           name="fullname"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre y Apellido</FormLabel>
+              <FormLabel>Full Name</FormLabel>
               <FormControl>
                 <Input placeholder="Ej: Juan Pérez" {...field} />
               </FormControl>

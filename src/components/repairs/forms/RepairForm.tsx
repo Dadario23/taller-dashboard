@@ -129,13 +129,11 @@ export function RepairForm({ open, onOpenChange, currentRow }: Props) {
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent className="flex flex-col h-full">
           <SheetHeader className="text-left">
-            <SheetTitle>
-              {isUpdate ? "Actualizar Reparación" : "Nueva Reparación"}
-            </SheetTitle>
+            <SheetTitle>{isUpdate ? "Update Repair" : "New Repair"}</SheetTitle>
             <SheetDescription>
               {isUpdate
-                ? "Actualiza la reparación con la información necesaria."
-                : "Añade una nueva reparación proporcionando la información requerida."}
+                ? "Update the repair with the necessary information."
+                : "Add a new repair by providing the required information."}
             </SheetDescription>
           </SheetHeader>
 
@@ -156,7 +154,7 @@ export function RepairForm({ open, onOpenChange, currentRow }: Props) {
             </Button>
 
             <SheetClose asChild>
-              <Button variant="outline">Cancelar</Button>
+              <Button variant="outline">Cancel</Button>
             </SheetClose>
           </SheetFooter>
         </SheetContent>
@@ -166,10 +164,12 @@ export function RepairForm({ open, onOpenChange, currentRow }: Props) {
       <AlertDialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Deseas imprimir el ticket?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Would you like to print the ticket?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              El ticket de la reparación se ha generado correctamente. ¿Quieres
-              imprimirlo o descargarlo?
+              The repair ticket has been successfully generated. Do you want to
+              print it or download it?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -187,7 +187,7 @@ export function RepairForm({ open, onOpenChange, currentRow }: Props) {
                 setShowPrintDialog(false);
               }}
             >
-              Descargar
+              Download
             </AlertDialogAction>
             <AlertDialogAction
               onClick={() => {
@@ -203,7 +203,7 @@ export function RepairForm({ open, onOpenChange, currentRow }: Props) {
                 setShowPrintDialog(false);
               }}
             >
-              Imprimir
+              Print
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

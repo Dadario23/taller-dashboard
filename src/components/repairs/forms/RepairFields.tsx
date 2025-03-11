@@ -52,12 +52,12 @@ export function RepairFields({ form }: RepairFieldsProps) {
           name="customer"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Cliente</FormLabel>
+              <FormLabel>Client</FormLabel>
               <FormControl>
                 <SelectDropdown
                   defaultValue={field.value}
                   onValueChange={field.onChange}
-                  placeholder="Selecciona un cliente"
+                  placeholder="Select a client"
                   items={customers.map((user) => ({
                     label: user.fullname,
                     value: user._id,
@@ -75,7 +75,7 @@ export function RepairFields({ form }: RepairFieldsProps) {
           name="device"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Dispositivo</FormLabel>
+              <FormLabel>Device</FormLabel>
               <FormControl>
                 <SelectDropdown
                   defaultValue={field.value}
@@ -85,7 +85,7 @@ export function RepairFields({ form }: RepairFieldsProps) {
 
                     setSelectedBrand("");
                   }}
-                  placeholder="Selecciona un dispositivo"
+                  placeholder="Select a device"
                   items={Object.keys(deviceIssues).map((device) => ({
                     label: device,
                     value: device,
@@ -114,7 +114,7 @@ export function RepairFields({ form }: RepairFieldsProps) {
 
             return (
               <FormItem>
-                <FormLabel>Marca</FormLabel>
+                <FormLabel>Brand</FormLabel>
                 <FormControl>
                   <SelectDropdown
                     defaultValue={field.value}
@@ -126,7 +126,7 @@ export function RepairFields({ form }: RepairFieldsProps) {
                         setSelectedBrand(value);
                       }
                     }}
-                    placeholder="Selecciona una marca"
+                    placeholder="Select a brand"
                     items={uniqueBrands.map((brand) => ({
                       label: brand,
                       value: brand,
@@ -146,12 +146,12 @@ export function RepairFields({ form }: RepairFieldsProps) {
           name="model"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Modelo</FormLabel>
+              <FormLabel>Model</FormLabel>
               <FormControl>
                 <SelectDropdown
                   defaultValue={field.value}
                   onValueChange={field.onChange}
-                  placeholder="Selecciona un modelo"
+                  placeholder="Select a model"
                   items={
                     selectedBrand && selectedBrand !== "Sin especificar"
                       ? (selectedDevice !== null
@@ -181,12 +181,12 @@ export function RepairFields({ form }: RepairFieldsProps) {
           name="physicalCondition"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Condición Física</FormLabel>
+              <FormLabel>Physical Condition</FormLabel>
               <FormControl>
                 <SelectDropdown
                   defaultValue={field.value}
                   onValueChange={field.onChange}
-                  placeholder="Selecciona un estado"
+                  placeholder="Select a status physical"
                   items={physicalConditions.map((condition) => ({
                     label: condition,
                     value: condition,
@@ -204,12 +204,12 @@ export function RepairFields({ form }: RepairFieldsProps) {
           name="flaw"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Desperfecto</FormLabel>
+              <FormLabel>Issue</FormLabel>
               <FormControl>
                 <SelectDropdown
                   defaultValue={field.value}
                   onValueChange={field.onChange}
-                  placeholder="Selecciona un desperfecto"
+                  placeholder="Select a issue"
                   items={
                     selectedDevice
                       ? deviceIssues[selectedDevice].map((flaw) => ({
@@ -232,12 +232,12 @@ export function RepairFields({ form }: RepairFieldsProps) {
           name="priority"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Prioridad</FormLabel>
+              <FormLabel>Priority</FormLabel>
               <FormControl>
                 <SelectDropdown
                   defaultValue={field.value}
                   onValueChange={field.onChange}
-                  placeholder="Selecciona una prioridad"
+                  placeholder="Select a priority"
                   items={["Normal", "Alta", "Urgente"].map((priority) => ({
                     label: priority,
                     value: priority,
@@ -255,11 +255,11 @@ export function RepairFields({ form }: RepairFieldsProps) {
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notas</FormLabel>
+              <FormLabel>Notes</FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
-                  placeholder="Ingresa observaciones adicionales"
+                  placeholder="Enter additional observations"
                   maxLength={90}
                   rows={3}
                 />
