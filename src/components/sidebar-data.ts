@@ -18,7 +18,8 @@ import {
   IconUserOff,
   IconUsers,
 } from "@tabler/icons-react";
-import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-react";
+
+import { AudioWaveform, Command, GalleryVerticalEnd, Zap } from "lucide-react";
 import { type SidebarData } from "@/components/types";
 import { Wrench } from "lucide-react";
 
@@ -30,9 +31,9 @@ export const sidebarData: SidebarData = {
   },
   teams: [
     {
-      name: "Shadcn Admin",
-      logo: Command,
-      plan: "ShadcnUI",
+      name: "COMPUMOBILE",
+      logo: Zap,
+      plan: "tech repair store",
     },
     {
       name: "Acme Inc",
