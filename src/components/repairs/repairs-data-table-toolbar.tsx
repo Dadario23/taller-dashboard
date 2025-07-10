@@ -22,12 +22,14 @@ export function RepairsDataTableToolbar<TData>({
       <div className="flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
         <Input
           placeholder="Filter repairs..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
+          value={(table.getColumn("client")?.getFilterValue() as string) ?? ""} // ✅ Cambiado "title" → "client"
+          onChange={
+            (event) =>
+              table.getColumn("client")?.setFilterValue(event.target.value) // ✅ Cambiado "title" → "client"
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
+
         <div className="flex gap-x-2">
           {table.getColumn("status") && (
             <DataTableFacetedFilter

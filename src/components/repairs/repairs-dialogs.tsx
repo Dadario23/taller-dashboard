@@ -1,20 +1,17 @@
 "use client";
 import { toast } from "@/hooks/use-toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { useRepairs } from "@/context/repairs-context";
 import { RepairsImportDialog } from "./repairs-import-dialog";
 import { RepairsMutateDrawer } from "./repairs-mutate-drawer";
+import { useRepairStore } from "@/stores/repairs-store"; // Importar el store de Zustand
+
 export function RepairsDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useRepairs();
+  const { open, setOpen, currentRow, setCurrentRow } = useRepairStore();
 
   return (
     <>
       {/* Modal para crear una nueva reparación */}
-      <RepairsMutateDrawer
-        key="repair-create"
-        open={open === "create"}
-        onOpenChange={() => setOpen("create")}
-      />
+      <RepairsMutateDrawer key="repair-create" />
 
       {/* Modal para importar reparaciones */}
       <RepairsImportDialog
@@ -28,15 +25,8 @@ export function RepairsDialogs() {
         <>
           {/* Modal para actualizar una reparación */}
           <RepairsMutateDrawer
-            key={`repair-update-${currentRow.id}`}
-            open={open === "update"}
-            onOpenChange={() => {
-              setOpen("update");
-              setTimeout(() => {
-                setCurrentRow(null);
-              }, 500);
-            }}
-            currentRow={currentRow}
+            key={`repair-update-${currentRow.id}`} // Usar currentRow.id
+            currentRow={currentRow} // Pasar currentRow
           />
 
           {/* Diálogo de confirmación para eliminar una reparación */}
@@ -67,11 +57,12 @@ export function RepairsDialogs() {
               });
             }}
             className="max-w-md"
-            title={`Delete this repair: ${currentRow.id} ?`}
+            title={`Delete this repair: ${currentRow.id} ?`} // Usar currentRow.id
             desc={
               <>
                 You are about to delete a repair with the ID{" "}
-                <strong>{currentRow.id}</strong>. <br />
+                <strong>{currentRow.id}</strong>. <br />{" "}
+                {/* Usar currentRow.id */}
                 This action cannot be undone.
               </>
             }

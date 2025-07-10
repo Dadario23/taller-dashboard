@@ -104,8 +104,9 @@ export async function GET(req: Request) {
     await User.findOne(); // 👈 Esto fuerza a Mongoose a registrar `User` antes de `Repair`
 
     const repairs = await Repair.find(filters)
-      .populate("customer", "fullname email") // Cambiado de customerId → customer
-      .populate("technician", "fullname") // Cambiado de technicianId → technician
+      .sort({ createdAt: -1 }) // 👈 Ordenar por fecha de creación (más reciente primero)
+      .populate("customer", "fullname email")
+      .populate("technician", "fullname")
       .lean();
 
     const transformedRepairs = repairs.map((repair) => {
@@ -162,13 +163,22 @@ export async function POST(req: Request) {
     console.log("Request body received:", body); // Verificar el cuerpo completo de la solicitud
 
     const {
-      title,
       status = "Ingresado",
       priority,
       device,
       customer,
       receivedBy,
     } = body;
+
+    if (!device?.flaw) {
+      return NextResponse.json(
+        { message: "El issue (falla) es requerido." },
+        { status: 400 }
+      );
+    }
+
+    // ✅ Generamos `title` automáticamente en el backend
+    const title = `${device.type} - ${device.flaw}`;
 
     // Extraer `notes` y `flaw` del objeto `device`
     const { notes, flaw } = device;
@@ -286,12 +296,10 @@ export async function POST(req: Request) {
     // 🚀 Generar el PDF con los datos de la reparación
     const pdfBuffer = await generatePDF(populatedRepair);
 
-    // Devolver el PDF como respuesta para descargar
-    return new NextResponse(pdfBuffer, {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename=ticket-${repairCode}.pdf`,
-      },
+    return NextResponse.json({
+      message: "Reparación creada exitosamente",
+      repairCode, // ✅ Devolver `repairCode`
+      pdfUrl: `data:application/pdf;base64,${pdfBuffer.toString("base64")}`, // ✅ Base64 para descargar el PDF
     });
   } catch (error) {
     console.error("Error creating repair:", error);

@@ -6,26 +6,23 @@ import { Search } from "@/components/search";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { repairsColumns } from "@/components/repairs/repairs-columns";
 import { RepairsDataTable } from "@/components/repairs/repairs-data-table";
-import RepairsProvider from "@/context/repairs-context";
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { TasksPrimaryButtons } from "@/components/repairs/tasks-primary-buttons";
 import { RepairsDialogs } from "@/components/repairs/repairs-dialogs";
 import { Loader } from "lucide-react";
+import { useRepairStore } from "@/stores/repairs-store"; // Importar el store de Zustand
 
 export default function Repairs() {
-  const [repairs, setRepairs] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // Estado para el LoaderCircle
+  // Usar el store de Zustand
+  const { repairs, isLoading, fetchRepairs } = useRepairStore();
 
-  React.useEffect(() => {
-    fetch("/api/repairs")
-      .then((res) => res.json())
-      .then((data) => setRepairs(data))
-      .catch((err) => console.error("Error fetching repairs:", err))
-      .finally(() => setIsLoading(false)); // Ocultamos el Loaderdespués de la carga
-  }, []);
+  // Obtener las reparaciones al montar el componente
+  useEffect(() => {
+    fetchRepairs();
+  }, [fetchRepairs]);
 
   return (
-    <RepairsProvider>
+    <>
       <Header>
         <Search />
         <div className="ml-auto flex items-center gap-4">
@@ -55,6 +52,6 @@ export default function Repairs() {
 
       {/* Aquí se incluyen los diálogos */}
       <RepairsDialogs />
-    </RepairsProvider>
+    </>
   );
 }

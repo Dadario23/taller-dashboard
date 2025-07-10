@@ -276,41 +276,54 @@ export async function PATCH(
   }
 }
 
-// DELETE: Eliminar una reparación
-export async function DELETE(
-  req: Request,
-  { params }: { params: Promise<{ repairCode: string }> } // Ajustado para coincidir con el tipo esperado
-) {
+// DELETE: Eliminar múltiples reparaciones
+export async function DELETE(req: Request) {
   try {
     await connectDB();
 
-    const { repairCode } = await params; // Usamos await para obtener los valores de params
+    // Obtener la lista de repairCodes desde el cuerpo de la solicitud
+    const { repairCodes } = await req.json();
 
-    const repair = await Repair.findOneAndDelete({ repairCode });
-
-    if (!repair) {
+    // Verificar si se proporcionaron repairCodes
+    if (!repairCodes || !Array.isArray(repairCodes)) {
       return NextResponse.json(
-        { message: "Repair not found" },
+        { message: "Invalid repairCodes provided" },
+        { status: 400 }
+      );
+    }
+
+    // Eliminar las reparaciones con los repairCodes proporcionados
+    const deleteResult = await Repair.deleteMany({
+      repairCode: { $in: repairCodes },
+    });
+
+    // Verificar si se eliminaron reparaciones
+    if (deleteResult.deletedCount === 0) {
+      return NextResponse.json(
+        { message: "No repairs found with the provided repairCodes" },
         { status: 404 }
       );
     }
 
+    // Devolver una respuesta exitosa
     return NextResponse.json(
-      { message: "Repair deleted successfully" },
+      {
+        message: "Repairs deleted successfully",
+        deletedCount: deleteResult.deletedCount,
+      },
       { status: 200 }
     );
   } catch (error) {
-    // Verifica si el error es una instancia de Error antes de acceder a la propiedad message
+    // Manejo de errores
     if (error instanceof Error) {
       return NextResponse.json(
-        { message: "Error deleting repair", error: error.message },
+        { message: "Error deleting repairs", error: error.message },
         { status: 500 }
       );
     } else {
-      // Si el error no es una instancia de Error, devuelve un mensaje genérico
       return NextResponse.json(
         {
-          message: "Error deleting repair",
+          message: "Error deleting repairs",
           error: "An unknown error occurred",
         },
         { status: 500 }

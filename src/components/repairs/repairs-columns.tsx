@@ -1,12 +1,12 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RepairType } from "@/components/repairs/data/schema";
+import { Repair } from "@/types/repair"; // Importar el tipo Repair
 import { DataTableColumnHeader } from "./repairs-data-table-column-header";
 import Link from "next/link";
 import { DataTableRowActions } from "./repairs-data-table-row-actions";
 
-export const repairsColumns: ColumnDef<RepairType>[] = [
+export const repairsColumns: ColumnDef<Repair>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -48,16 +48,24 @@ export const repairsColumns: ColumnDef<RepairType>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "title",
+    id: "client", // ✅ Nuevo ID de la columna
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Title" />
+      <DataTableColumnHeader column={column} title="Client" />
     ),
-    cell: ({ row }) => (
-      <span className="font-medium">{row.getValue("title")}</span>
-    ),
+    cell: ({ row }) => {
+      const customer = row.original.customer;
+      return (
+        <span className="font-medium">
+          {typeof customer === "string"
+            ? customer
+            : customer?.fullname || "N/A"}
+        </span>
+      );
+    },
     enableSorting: true,
     enableHiding: false,
   },
+
   {
     accessorKey: "device",
     header: "Device Info",
@@ -68,9 +76,7 @@ export const repairsColumns: ColumnDef<RepairType>[] = [
           <p className="text-sm font-medium">
             {device.type} - {device.brand}
           </p>
-          <p className="text-xs text-muted-foreground">
-            {device.model} (SN: {device.serialNumber || "N/A"})
-          </p>
+          <p className="text-xs text-muted-foreground">{device.flaw}</p>
         </div>
       );
     },

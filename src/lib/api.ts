@@ -49,7 +49,9 @@ export const getCustomers = async () => {
 /**
  * Crea una nueva reparación y devuelve la URL del PDF generado.
  */
-export const createRepair = async (repairData: RepairData) => {
+export const createRepair = async (
+  repairData: RepairData
+): Promise<{ repairCode: string; pdfUrl: string } | null> => {
   try {
     const response = await fetch(`${API_URL}/api/repairs`, {
       method: "POST",
@@ -61,10 +63,13 @@ export const createRepair = async (repairData: RepairData) => {
 
     if (!response.ok) throw new Error("Error al crear la reparación");
 
-    const pdfBlob = await response.blob();
-    return URL.createObjectURL(pdfBlob);
+    const data = await response.json(); // ✅ Leer respuesta como JSON
+    return {
+      repairCode: data.repairCode, // ✅ Extraer `repairCode`
+      pdfUrl: data.pdfUrl, // ✅ Extraer `pdfUrl`
+    };
   } catch (error) {
-    console.error("Error al crear la reparación:", error);
+    console.error("❌ Error al crear la reparación:", error);
     return null;
   }
 };

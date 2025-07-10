@@ -10,7 +10,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRepairs } from "@/context/repairs-context";
+import { useRepairStore } from "@/stores/repairs-store";
 import { RepairsForm } from "@/components/repairs/data/schema";
 
 interface DataTableRowActionsProps<TData> {
@@ -22,7 +22,7 @@ export function DataTableRowActions<TData>({
 }: DataTableRowActionsProps<TData>) {
   const repair = row.original as RepairsForm;
 
-  const { setOpen, setCurrentRow } = useRepairs();
+  const { setOpen, setCurrentRow } = useRepairStore();
 
   return (
     <DropdownMenu modal={false}>
@@ -38,7 +38,10 @@ export function DataTableRowActions<TData>({
       <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(repair);
+            setCurrentRow({
+              ...repair,
+              title: `Reparación de ${repair.device.type}`, // ✅ Se agrega un `title` si es necesario
+            });
             setOpen("update");
           }}
         >
@@ -49,7 +52,10 @@ export function DataTableRowActions<TData>({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(repair);
+            setCurrentRow({
+              ...repair,
+              title: `Reparación de ${repair.device.type}`, // ✅ Se asegura que `title` esté presente
+            });
             setOpen("delete");
           }}
         >

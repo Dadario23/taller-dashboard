@@ -1,31 +1,22 @@
 "use client";
 
 import { RepairForm } from "./forms/RepairForm";
-
-interface RepairRow {
-  device: string;
-  customer: string;
-  flaw: string;
-  priority: "Normal" | "Alta" | "Urgente";
-  brand: string;
-  model: string;
-  physicalCondition: string;
-  notes: string;
-  id?: string; // Cambiar a string | undefined
-  status?: string; // Opcional
-}
+import { useRepairStore } from "@/stores/repairs-store"; // Importar el store
+import { Repair } from "@/types/repair"; // Importar el tipo unificado
 
 interface Props {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  currentRow?: RepairRow;
+  currentRow?: Repair; // Usar Repair
 }
 
-export function RepairsMutateDrawer({ open, onOpenChange, currentRow }: Props) {
+export function RepairsMutateDrawer({ currentRow }: Props) {
+  const { open, setOpen } = useRepairStore(); // Obtener open y setOpen del store
+
   return (
     <RepairForm
-      open={open}
-      onOpenChange={onOpenChange}
+      open={open === "create" || open === "update"} // Abre el Sheet si open es "create" o "update"
+      onOpenChange={(isOpen) => {
+        if (!isOpen) setOpen(null); // Cierra el Sheet
+      }}
       currentRow={currentRow}
     />
   );

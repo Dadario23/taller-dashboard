@@ -23,16 +23,14 @@ import {
 } from "@/components/ui/table";
 import { RepairsDataTablePagination } from "@/components/repairs/repairs-data-table-pagination";
 import { RepairsDataTableToolbar } from "@/components/repairs/repairs-data-table-toolbar";
+import { Repair } from "@/types/repair"; // Importar el tipo Repair
 
-interface RepairsDataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+interface RepairsDataTableProps {
+  columns: ColumnDef<Repair, any>[]; // Usar Repair directamente
+  data: Repair[]; // Usar Repair directamente
 }
 
-export function RepairsDataTable<TData, TValue>({
-  columns,
-  data,
-}: RepairsDataTableProps<TData, TValue>) {
+export function RepairsDataTable({ columns, data }: RepairsDataTableProps) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});

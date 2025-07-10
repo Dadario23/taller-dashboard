@@ -18,10 +18,10 @@ import {
   physicalConditions,
 } from "@/components/repairs/data/constants";
 import { getCustomers } from "@/lib/api";
-import { RepairsForm } from "@/components/repairs/data/schema";
+import { Repair } from "@/types/repair"; // Cambiar a Repair
 
 interface RepairFieldsProps {
-  form: UseFormReturn<RepairsForm>;
+  form: UseFormReturn<Repair>; // Cambiar a Repair
 }
 
 export function RepairFields({ form }: RepairFieldsProps) {
@@ -36,7 +36,6 @@ export function RepairFields({ form }: RepairFieldsProps) {
     | "Consola de video juego";
 
   const [selectedDevice, setSelectedDevice] = useState<DeviceType | null>(null);
-
   const [selectedBrand, setSelectedBrand] = useState<string>("");
 
   useEffect(() => {
@@ -49,7 +48,7 @@ export function RepairFields({ form }: RepairFieldsProps) {
         {/* Cliente */}
         <FormField
           control={form.control}
-          name="customer"
+          name="customer" // Este campo no cambia
           render={({ field }) => (
             <FormItem>
               <FormLabel>Client</FormLabel>
@@ -72,7 +71,7 @@ export function RepairFields({ form }: RepairFieldsProps) {
         {/* Dispositivo */}
         <FormField
           control={form.control}
-          name="device"
+          name="device.type" // Cambiar a device.type
           render={({ field }) => (
             <FormItem>
               <FormLabel>Device</FormLabel>
@@ -82,7 +81,6 @@ export function RepairFields({ form }: RepairFieldsProps) {
                   onValueChange={(value) => {
                     field.onChange(value);
                     setSelectedDevice(value as DeviceType);
-
                     setSelectedBrand("");
                   }}
                   placeholder="Select a device"
@@ -100,7 +98,7 @@ export function RepairFields({ form }: RepairFieldsProps) {
         {/* Marca (depende del Dispositivo) */}
         <FormField
           control={form.control}
-          name="brand"
+          name="device.brand" // Cambiar a device.brand
           render={({ field }) => {
             const brandOptions =
               selectedDevice !== null
@@ -143,7 +141,7 @@ export function RepairFields({ form }: RepairFieldsProps) {
         {/* Modelo (depende de la Marca) */}
         <FormField
           control={form.control}
-          name="model"
+          name="device.model" // Cambiar a device.model
           render={({ field }) => (
             <FormItem>
               <FormLabel>Model</FormLabel>
@@ -178,7 +176,7 @@ export function RepairFields({ form }: RepairFieldsProps) {
         {/* Condición física */}
         <FormField
           control={form.control}
-          name="physicalCondition"
+          name="device.physicalCondition" // Cambiar a device.physicalCondition
           render={({ field }) => (
             <FormItem>
               <FormLabel>Physical Condition</FormLabel>
@@ -201,7 +199,7 @@ export function RepairFields({ form }: RepairFieldsProps) {
         {/* Desperfecto (depende del Dispositivo) */}
         <FormField
           control={form.control}
-          name="flaw"
+          name="device.flaw" // Cambiar a device.flaw
           render={({ field }) => (
             <FormItem>
               <FormLabel>Issue</FormLabel>
@@ -229,7 +227,7 @@ export function RepairFields({ form }: RepairFieldsProps) {
         {/* Prioridad */}
         <FormField
           control={form.control}
-          name="priority"
+          name="priority" // Este campo no cambia
           render={({ field }) => (
             <FormItem>
               <FormLabel>Priority</FormLabel>
@@ -252,7 +250,7 @@ export function RepairFields({ form }: RepairFieldsProps) {
         {/* Notas */}
         <FormField
           control={form.control}
-          name="notes"
+          name="device.notes" // Cambiar a device.notes
           render={({ field }) => (
             <FormItem>
               <FormLabel>Notes</FormLabel>
